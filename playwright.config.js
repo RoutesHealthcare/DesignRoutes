@@ -10,6 +10,7 @@ const PORT=+process.env.TEST_PORT||8123;
 export default defineConfig({
   testDir:'tests/e2e',
   fullyParallel:true,
+  workers:process.env.CI?undefined:2,   // Playwright's CPU-count default over-subscribes memory on a loaded dev machine, causing newPage() timeouts
   forbidOnly:!!process.env.CI,
   retries:process.env.CI?1:0,
   reporter:process.env.CI?[['list'],['html',{open:'never'}]]:'list',
