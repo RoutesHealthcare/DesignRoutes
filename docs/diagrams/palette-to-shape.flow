@@ -1,0 +1,30 @@
+flow 1
+page "Palette to shape" size 354x105 direction LR
+
+# How a shape gets from its definition onto the canvas. Top row: where a shape is defined
+# and how it gets on the palette. Bottom row: what happens when you click or drag it.
+# Everything about a shape is in its ShapeDef in one group file: how it's drawn, and its
+# palette entry (label, title, icon). registry.ts builds both SHAPES and PALETTE from those,
+# so the palette and the shape library can't disagree. Dotted lines are reads, not calls.
+
+groups: data "Group files (flowchart.ts, \nwireframe.ts, ...) - one ShapeDef \nper shape, palette entry included" @ 8.7,16 77.5x20
+reg: data "shapes/registry.ts - SHAPES \nto draw a shape, \nPALETTE to list it" @ 92.5,17.5 77.5x17.5
+pview: process "Palette.tsx - a button per PALETTE item, with onClick and onDragStart" @ 186.1,19.4 69.4x13.9
+buttons: data "Buttons in the page: data-kind \nand title" @ 271.6,19.2 67.5x15
+intelli: process "intellisense.ts - button titles become hover help in the text pane" @ 272.5,45 65x12.5
+
+user: terminator "User clicks or drags a palette button" @ 30,77.5 45x12.5
+paljs: process "onClick (Palette.tsx) or onDrop (Stage.tsx) - placeShape(kind, x, y) in palette.ts" @ 95,77.5 77.5x12.5
+add: process "shapes/add.ts - addShape(kind, x, y)" @ 27.5,52.5 72.5x10
+build: process "shapes/build.ts - buildShape draws it from its ShapeDef" @ 116.7,51.4 57.5x12.5
+canvas: terminator "Shape on the canvas" @ 184.4,52.6 37.5x10
+
+groups -> reg [route=elbow] : "merged"
+reg -> pview [route=elbow] : "PALETTE"
+pview -> buttons [route=elbow] : "renders"
+buttons ..> intelli [route=elbow] : "reads title"
+user -> paljs [route=elbow]
+paljs -> add [route=elbow beginpt=n endpt=s] : "kind"
+reg ..> add [route=elbow via="131.2,45 63.8,45" beginpt=s endpt=n] : "SHAPES[kind]"
+add -> build [route=elbow]
+build -> canvas [route=elbow]

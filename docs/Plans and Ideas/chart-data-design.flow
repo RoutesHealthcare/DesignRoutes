@@ -1,0 +1,118 @@
+flow 1
+
+# ---------------------------------------------------------------------------
+# Page 0: what chart data is, in a few cards
+# ---------------------------------------------------------------------------
+page "0. Summary"
+
+summary: container "Chart data: fill charts from a CSV instead of typing numbers" [flow=column gap=4]
+pitch: process "Drop or paste a CSV onto a chart, table or grid, pick which columns go where, and its\n{ } values and names are filled in. Later, an @data block lets several charts share\none table of numbers in the file, so changing a figure changes every chart that uses it." 190x24 [fill=#DCE3EB size=13 in=summary]
+points: container [flow=row gap=4 in=summary]
+p1: sticky "v1 changes no syntax\n\nThe import writes the same\n{ 3, 5, 2 } you'd type,\nso every tool still reads it" 60x38 [in=points]
+p2: sticky "One mapping per family\n\nSeries, x/y points, from-to\nflows, matrices: each chart\nknows what columns it needs" 60x38 [in=points]
+p3: sticky "Still one file\n\nNo links to outside CSVs:\nthe numbers live in the\n.flow, as now" 60x38 [in=points]
+status: callout "Status: design only. Nothing is built yet.\nv1 = import onto a chart (pages 1-3). v2 = @data blocks (page 4)." 190x18 [in=summary]
+
+# ---------------------------------------------------------------------------
+# Page 1: how an import works
+# ---------------------------------------------------------------------------
+page "1. How it works" direction LR
+
+csv: document "CSV or TSV\ndropped, pasted,\nor from Excel"
+read: process "Read it\nheader row,\ncomma / tab / ;"
+target: decision "Dropped on?"
+map: preparation "Mapping dialog\ncolumns → the chart's\nslots, with a preview"
+newc: process "Pick a chart type\nfor a new shape\n(suggested from columns)"
+write: process "Write { values },\nlabel names, and the\nlegend's names"
+commit: terminator "One undo step"
+bad: alert "A cell that isn't\na number: shown red,\nimport waits"
+
+csv -> read
+read -> target
+target -> map : "a chart, table\nor grid"
+target -> newc : "empty page"
+newc -> map
+map -> write
+map -alt-> bad : "bad cells"
+write -> commit
+
+key "Key"
+
+# ---------------------------------------------------------------------------
+# Page 2: what each chart family needs
+# ---------------------------------------------------------------------------
+page "2. Mappings"
+
+mapg: grid { Charts, Columns they need, Example CSV; "bar, line, area, radar, stacked, percent", "names + one or more series", "month,north,south"; "pie, donut, funnel, polar, waterfall", "names + one series", "stage,people"; "treemap, wordcloud, tilemap, maps", "names + one value", "country,visits"; "scatter / bubble", "x, y (+ size)", "height,weight,age"; candlestick, "open, high, low, close", "day,open,high,low,close"; "boxplot, histogram", "one column of raw values, worked out for you", "response_ms"; gantt, "task + start + length (or start + end)", "task,start,end"; sankey, "from + to + amount; names collected", "from,to,people"; "chord, heatmap", "a square or any matrix", "first column = row names"; "bullet, dial, kpi, progress", "one value (+ target)", "value,target"; "table", "the header row becomes the columns", "id,name,email"; "grid", "every cell as it is", "any" } @ 15,15 260x110
+
+m1: callout "boxplot and histogram are the two where the import works something out:\nmin, quartiles, median and max, or bucket counts, from the raw column." @ 15,132 160x14
+
+# ---------------------------------------------------------------------------
+# Page 3: the mapping dialog, as a wireframe
+# ---------------------------------------------------------------------------
+page "3. The dialog" size 297x170
+
+dlg: container "Fill \"Sales by region\" from sales.csv" @ 15,10 267x150
+pv: grid { month, north, south, west; Jan, 3, 4, 1; Feb, 5, 1, 2; Mar, 2, 6, 4 } @ 22,30 110x40
+names: dropdownmenu "Names from: month | month | north | south | west" @ 140,30 70x30
+series: togglechips "✓ north | ✓ south | west" @ 140,64 70x10
+orient: segmented "Series are columns | Series are rows" @ 140,78 70x10
+prev: bar "Preview" { 3, 5, 2; 4, 1, 6 } @ 220,30 55x45 [colours="#1F6F78 #E07A5F"]
+leg: checkbox "Also fill the legend next to the chart (found: legend1)" @ 22,94 150x8 [state=on]
+note: inlineerror "Row 7: \"n/a\" in south isn't a number. Fix it, or treat it as 0" @ 22,106 200x10
+skip: checkbox "Treat blank and non-number cells as 0" @ 22,120 150x8
+ok: button "Fill chart" @ 222,138 50x12
+cancel: button "Cancel" @ 166,138 50x12
+
+# ---------------------------------------------------------------------------
+# Page 4: v2, @data blocks
+# ---------------------------------------------------------------------------
+page "4. @data blocks" direction LR
+
+example: codeblock "flow 1\n@data sales start\nmonth, north, south, west\nJan, 3, 4, 1\nFeb, 5, 1, 2\nMar, 2, 6, 4\n@data end\n\npage \"Dashboard\"\nbyregion: bar \"Sales by region\" [data=sales]\nnorth: line \"North\" [data=sales cols=\"north\"]\nkey1: legend [data=sales]\nraw: grid [data=sales]" @ 15,15 120x75
+
+n1: callout "File-wide, after the header and icons,\nbefore the first page (like icons).\nCSV inside; quotes as in a grid" @ 150,15 80x18
+n2: callout "data= names the block; cols= picks\nand orders columns. The first column\nis names unless it's all numbers" @ 150,38 80x18
+n3: callout "A legend or grid can use it too,\nso names never drift apart" @ 150,61 80x14
+
+n1 .. example
+n2 .. example
+n3 .. example
+
+r: callout "Rules: data= with its own { } is an error (one source of numbers).\nThe editor never rewrites a block; editing a value in Properties edits the block's row." @ 15,98 160x14
+
+# ---------------------------------------------------------------------------
+# Page 5: what's in v1 and what waits
+# ---------------------------------------------------------------------------
+page "5. v1 and later"
+
+phases: container "Scope" [flow=row gap=6]
+
+v1: container "v1: import" [flow=column gap=3 in=phases]
+v1a: process "Drop or paste CSV/TSV\nonto a chart, table, grid" 70x16 [fill=#DCE3EB in=v1]
+v1b: process "Mapping dialog with\npreview, per chart family" 70x16 [fill=#DCE3EB in=v1]
+v1c: process "Writes plain { } values;\nno syntax change" 70x16 [fill=#DCE3EB in=v1]
+v1d: process "Fills a legend beside\nthe chart if there is one" 70x16 [fill=#DCE3EB in=v1]
+v1e: process "Dropped on an empty page:\nsuggest a chart type" 70x16 [fill=#DCE3EB in=v1]
+
+v2: container "v2: @data blocks" [flow=column gap=3 in=phases]
+v2a: process "@data name start / end,\nfile-wide" 70x16 [in=v2]
+v2b: process "data= and cols= on charts,\nlegends, tables and grids" 70x16 [in=v2]
+v2c: process "Exports and the skill's\nchecker resolve them to\nplain values" 70x18 [in=v2]
+
+checks: container "Checker messages (v2)" [flow=column gap=3 in=phases]
+c1: inlineerror "Error: there is no data \"x\"" 70x12 [in=checks]
+c2: inlineerror "Error: data= and { } on one shape" 70x12 [in=checks]
+c3: inlineerror "Error: no column \"y\" in data \"x\"" 70x12 [in=checks]
+c4: inlineerror "Error: \"n/a\" in a number column\n(row 3 of data \"x\")" 70x14 [in=checks]
+c5: alert "Warning: chart shows one series;\nonly the first column is used" 70x14 [in=checks]
+
+# ---------------------------------------------------------------------------
+# Page 6: open questions
+# ---------------------------------------------------------------------------
+page "6. Open questions"
+
+q: container "Open questions" [flow=column gap=4]
+q1: sticky "Block syntax: @data sales start / @data end matches\n@animation. Or @data sales { ... } on one line for\nsmall tables? Settle both designs together." 120x20 [in=q]
+q2: sticky "Linked CSV files (data=\"sales.csv\"): out for now. The\nsingle HTML can't reread a path, and it breaks one file.\nRevisit with include-design.flow for the desktop app." 120x20 [in=q]
+q3: sticky "Dates in gantt: the chart takes numbers. Turn dates\ninto days from the earliest, and label the axis?" 120x18 [in=q]

@@ -1,0 +1,31 @@
+flow 1
+# An order going through a small flowchart, one step at a time. Open it and press Present in the toolbar:
+# → or a click for the next step, ← for back, Esc to leave. The drawing itself is the base diagram; the
+# @animation block at the bottom says what each step changes.
+page "Order flow" size 240x193
+
+start: terminator "Order placed" @ 20,40 50x18
+check: decision "In stock?" @ 95,35 50x28
+pay: process "Take payment" @ 175,40 50x18
+ship: process "Ship it" @ 175,100 50x18
+done: terminator "Delivered" @ 175,160 50x18
+start -> check
+check -> pay : "yes"
+pay -> ship
+ship -> done
+
+@animation start
+step 1
+   $start [fill=#C8E6C9]                                              # the order comes in
+step 2
+   $check [fill=#FFF3C4]                                              # checking stock
+step 3
+   $pay [fill=#C8E6C9]                                                # paid; colours carry over
+   +backorder: process "Backorder" @ 95,100 50x18 [fill=#F4C7C3]     # a shape only the animation has
+step 4
+   -$backorder                                                        # not needed after all
+   $ship [fill=#C8E6C9]
+step 5
+   $done [fill=#1F6F78 text=#FFFFFF]
+   $pay @ 100,160                                                     # slides there; its lines follow
+@animation end

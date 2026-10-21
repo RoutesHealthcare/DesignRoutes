@@ -1,0 +1,32 @@
+flow 1
+
+# Factory Method: define an interface for creating an object, but let subclasses decide which class to instantiate.
+
+page "When to use" size 243x186
+
+start: terminator "Designing how an object gets created"
+vary: decision "Does the exact type of object to create vary at runtime or by subclass?"
+subclass_decides: decision "Should subclasses decide which concrete class to instantiate, not the caller?"
+direct: terminator "Instantiate the class directly with \"new\"" [fill=#DCE3EB]
+abstract_factory: terminator "Consider Abstract Factory if whole families of related objects vary together" [fill=#DCE3EB]
+use: terminator "Use Factory Method" [fill=#C8E6C9]
+
+start -> vary
+vary -> subclass_decides : "yes"
+vary -> direct : "no"
+subclass_decides -> use : "yes"
+subclass_decides -> abstract_factory : "no"
+
+page "Structure" size 341x118 direction LR
+
+creator: umlclass "Creator | | +factoryMethod(): Product\n+operation()"
+concreteCreator: umlclass "ConcreteCreator | | +factoryMethod(): Product"
+product: umlclass "«interface»\nProduct | | +use()"
+concreteProduct: umlclass "ConcreteProduct | | +use()"
+
+concreteCreator --|> creator
+concreteProduct --|> product
+creator ..> product : "creates"
+concreteCreator ..> concreteProduct : "creates"
+
+key "Key"

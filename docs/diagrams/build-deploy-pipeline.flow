@@ -1,0 +1,19 @@
+flow 1
+page "Build and deploy pipeline" size 295x85 direction LR
+
+# From source to the single file this editor actually runs from, plus where
+# the Playwright suite fits in. See README sections Developing and Testing.
+
+src: document "src/ - React components, JS and TS modules, index.html, css" @ 13.7,2.9 57.5x19
+buildcmd: process "npm run build (vite build, inlined by vite-plugin-singlefile)" @ 97.5,3.5 50x16.5
+dist: document "dist/DesignRoutes-editor.html - single file" @ 162.5,3.5 47.5x16.5
+diskuse: terminator "Opened straight from disk, or served by any app that embeds it" @ 225,3.5 55x16.5
+testserve: process "Playwright starts vite on localhost:8123 (src/ modules); npm run dev for yourself" @ 10,27.5 65x15
+testrun: process "npm test -> builds, then Playwright runs every spec against src/ (modules) and dist/ (bundle), and remakes the docs pictures (docs)" @ 3.5,52.6 77.5x17.5
+
+src -> buildcmd
+buildcmd -> dist
+dist -> diskuse
+src -> testserve
+testserve -> testrun
+dist -> testrun [route=elbow beginpt=s endpt=e] : "bundle"

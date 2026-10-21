@@ -1,0 +1,31 @@
+flow 1
+
+# Strategy: define a family of interchangeable algorithms and make them swappable behind a common interface.
+
+page "When to use" size 227x186
+
+start: terminator "Implementing a behaviour"
+multiple: decision "Are there multiple interchangeable ways to do the same task?"
+runtime: decision "Do clients need to pick or switch the algorithm at runtime?"
+single: terminator "Use a single implementation" [fill=#DCE3EB]
+template: terminator "Consider Template Method if the variation is a few steps inside one fixed algorithm" [fill=#DCE3EB]
+use: terminator "Use Strategy" [fill=#C8E6C9]
+
+start -> multiple
+multiple -> runtime : "yes"
+multiple -> single : "no"
+runtime -> use : "yes"
+runtime -> template : "no"
+
+page "Structure" size 283x167 direction LR
+
+context: umlclass "Context | -strategy: Strategy | +setStrategy(s)\n+execute()"
+strategy: umlclass "«interface»\nStrategy | | +algorithm()"
+concreteA: umlclass "ConcreteStrategyA | | +algorithm()"
+concreteB: umlclass "ConcreteStrategyB | | +algorithm()"
+
+context o-- strategy : "has a"
+concreteA --|> strategy
+concreteB --|> strategy
+
+key "Key"

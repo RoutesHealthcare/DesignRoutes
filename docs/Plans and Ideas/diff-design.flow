@@ -1,0 +1,145 @@
+flow 1
+
+# ---------------------------------------------------------------------------
+# Page 0: what a flow diff is, in a few cards
+# ---------------------------------------------------------------------------
+page "0. Summary"
+
+summary: container "Diff: see what changed between two versions of a flow" [flow=column gap=4]
+pitch: process "Compare two versions of a .flow file on the canvas, not as a text diff.\nAdded shapes are green, removed ones red and faded, changed ones amber,\nand a moved shape shows a dashed outline where it used to be." 190x24 [fill=#DCE3EB size=13 in=summary]
+points: container [flow=row gap=4 in=summary]
+p1: sticky "Matched by id\n\nIds are unique on a page,\nso two parsed versions\npair up by themselves" 60x38 [in=points]
+p2: sticky "Meaning before layout\n\nMoves and resizes can be\nhidden, so a review sees\nwhat the diagram says" 60x38 [in=points]
+p3: sticky "Made for git\n\nA CLI writes one PNG per\nchanged page, ready to go\ninto a pull request" 60x38 [in=points]
+status: callout "Status: design only. Nothing is built yet.\nv1 is the in-editor view against the last save or a chosen file (page 5)." 190x18 [in=summary]
+
+# ---------------------------------------------------------------------------
+# Page 1: how a diff is worked out
+# ---------------------------------------------------------------------------
+page "1. How it works" direction LR
+
+before: document "Before\nlast save, a file,\nor a git version"
+after: document "After\nthe text in\nthe editor now"
+parse: process "parseFlow\nboth texts,\nunchanged parser"
+pages: preparation "Pair pages\nby name"
+match: process "Pair shapes by id,\nconnections by\nfrom, type and to"
+classify: decision "Which kind\nof change?"
+overlay: process "Overlay\ncolours, ghosts,\nold outlines"
+view: browser "Diff view\nread-only canvas\n+ list of changes"
+cli: script "flow-diff\nCLI: one PNG\nper changed page" [lang=sh]
+
+before -data-> parse
+after -data-> parse
+parse -> pages
+pages -> match
+match -> classify
+classify -> overlay : "added, removed,\nchanged, moved"
+overlay -> view
+overlay -alt-> cli : "run from\nthe command line"
+
+key "Key"
+
+# ---------------------------------------------------------------------------
+# Page 2: what counts as a change
+# ---------------------------------------------------------------------------
+page "2. What counts"
+
+kinds: container "Kinds of change" [flow=row gap=6]
+
+shapes: container "Shapes" [flow=column gap=3 in=kinds]
+s1: sticky "Added: an id only in After.\nDrawn normally, green outline" 60x20 [fill=#C8E6C9 in=shapes]
+s2: sticky "Removed: an id only in Before.\nDrawn at its old place,\nfaded, red outline" 60x22 [fill=#F4C7C3 in=shapes]
+s3: sticky "Changed: same id, different\ntype, label, data { } or a\nsetting that means something" 60x22 [fill=#FFE38A in=shapes]
+s4: sticky "Moved or resized: only @ or\nWxH differ. Dashed outline\nat the old place" 60x22 [in=shapes]
+
+conns: container "Connections" [flow=column gap=3 in=kinds]
+c1: sticky "Matched by from, type and to.\nTwo identical lines on a page\nmatch in order" 60x22 [in=conns]
+c2: sticky "Label or settings differ:\nchanged (amber line)" 60x20 [in=conns]
+c3: sticky "Type differs (-> became -alt->):\nremoved + added, because\nthe meaning changed" 60x22 [in=conns]
+c4: sticky "route, via, beginpt, endpt\nonly: a layout change" 60x20 [in=conns]
+
+ignored: container "Not a change" [flow=column gap=3 in=kinds]
+i1: sticky "Comments, blank lines\nand the order of lines" 60x20 [in=ignored]
+i2: sticky "Except line order inside a\nflow= container: that is\nthe order shown, so it counts" 60x22 [fill=#DCE3EB in=ignored]
+i3: sticky "Aliases: rect and process\nare the same type" 60x20 [in=ignored]
+i4: sticky "Icon data: compared by\nname only, never by\nits base64" 60x20 [in=ignored]
+
+pagesr: container "Pages" [flow=column gap=3 in=kinds]
+g1: sticky "Paired by name. A page only\nin After is all added; only\nin Before, all removed" 60x22 [in=pagesr]
+g2: sticky "A renamed page shows as\nremoved + added in v1" 60x20 [in=pagesr]
+g3: sticky "size or direction changed:\na note on the page's tab" 60x20 [in=pagesr]
+
+# ---------------------------------------------------------------------------
+# Page 3: the view, as a wireframe
+# ---------------------------------------------------------------------------
+page "3. The view" size 297x190
+
+win: appwindow "DesignRoutes: orders.flow (comparing)" @ 10,10 277x170
+bar: menubar "Compare with: Last save ▾ | Before | Both | After | Hide layout changes | Done" @ 14,28 269x10
+side: sidebar "Changes (5) | + ship: Shipped | − wait: Back-order | ~ check: label | ~ check → pick | ↔ pick moved" @ 14,42 70x104
+stage: container "Page: Orders" @ 90,42 193x104 [bgfill=#FAFAFA]
+d1: terminator "Order placed" @ 100,56 30x12 [in=stage]
+d2: decision "In stock now?" @ 145,52 34x20 [stroke=#C99A00 weight=2 in=stage]
+d3: process "Pick and pack" @ 200,56 34x12 [in=stage]
+d3old: process @ 200,78 34x12 [stroke=#7A8590 in=stage]
+d4: process "Back-order" @ 145,96 34x12 [fill=#F4F4F4 stroke=#C62828 text=#9AA3AB in=stage]
+d5: terminator "Shipped" @ 245,56 30x12 [stroke=#2E7D32 weight=2 in=stage]
+tabs: tabs "Orders • | Stock | Returns •" @ 90,150 193x10
+legendd: legendrow "Added | Removed | Changed | Moved" @ 14,166 120x8 [colours="#2E7D32 #C62828 #C99A00 #7A8590"]
+
+d1 -> d2
+d2 -> d3 : "yes"
+d2 -alt-> d4 : "no"
+d3 -> d5
+
+n1: callout "Clicking a change selects it\nand scrolls to it" @ 14,149 70x13
+n2: callout "• on a tab: that page changed" @ 226,165 57x10
+n3: callout "Dashed grey: where\npick was in Before" @ 240,84 42x16
+n3 .. d3old
+
+# ---------------------------------------------------------------------------
+# Page 4: where the two versions come from
+# ---------------------------------------------------------------------------
+page "4. Sources" direction LR
+
+src: container "Before can be" [flow=column gap=3]
+sa: process "The last save\n(the editor keeps the saved\ntext; no file access needed)" 70x18 [fill=#DCE3EB in=src]
+sb: process "Any .flow file\nyou pick or drop" 70x16 [fill=#DCE3EB in=src]
+sc: process "A git version\n(desktop app and CLI only:\nthe single HTML can't run git)" 70x18 [in=src]
+
+cli: container "The CLI" [flow=column gap=3]
+cmd: codeblock "node scripts/flow-diff.mjs old.flow new.flow\n  --png out/      one PNG per changed page\n  --text          a plain list of changes\n\n# as a git difftool:\ngit difftool -x 'node scripts/flow-diff.mjs' -- '*.flow'" 120x40 [in=cli]
+cnote: callout "Uses the same parser bundle as check-flow,\nplus the PNG renderer, so a CI job can attach\npictures of what a pull request changes." 120x18 [in=cli]
+
+# ---------------------------------------------------------------------------
+# Page 5: what's in v1 and what waits
+# ---------------------------------------------------------------------------
+page "5. v1 and later"
+
+phases: container "Scope" [flow=row gap=6]
+
+v1: container "v1" [flow=column gap=3 in=phases]
+v1a: process "Compare with the last save\nor a picked file" 70x16 [fill=#DCE3EB in=v1]
+v1b: process "Added / removed / changed /\nmoved on the canvas" 70x16 [fill=#DCE3EB in=v1]
+v1c: process "Changes list; click to go" 70x14 [fill=#DCE3EB in=v1]
+v1d: process "Before / Both / After switch\nand Hide layout changes" 70x16 [fill=#DCE3EB in=v1]
+v1e: process "Read-only: Done goes back\nto editing" 70x16 [fill=#DCE3EB in=v1]
+v1f: process "CLI with --text and --png" 70x14 [fill=#DCE3EB in=v1]
+
+later: container "Later, only if needed" [flow=column gap=3 in=phases]
+la: process "Git versions in the\ndesktop app" 70x16 [in=later]
+lb: process "Spot renamed ids (same type\nand label, new id) and show\nthem as a rename" 70x18 [in=later]
+lc: process "Spot renamed pages\n(most shapes in common)" 70x16 [in=later]
+ld: process "Take one change: copy a\nchange from Before back\ninto the text" 70x18 [in=later]
+le: process "Three-way merge for\n.flow conflicts" 70x16 [in=later]
+
+# ---------------------------------------------------------------------------
+# Page 6: open questions
+# ---------------------------------------------------------------------------
+page "6. Open questions"
+
+q: container "Open questions" [flow=column gap=4]
+q1: sticky "Removed shapes: draw them where they were,\neven if something new now sits there,\nor push them to a 'removed' tray at the side?" 120x20 [in=q]
+q2: sticky "A shape that moved into another container\n(in= changed): a move, or a change?\n(It changes who does the step in swimlanes.)" 120x20 [in=q]
+q3: sticky "Should the diff view allow editing (After\nside only), or stay read-only to keep it simple?" 120x18 [in=q]
+q4: sticky "Where it hooks in: a new src/engine/flow/diff.ts\ntaking two FlowAsts; render.ts draws the overlay." 120x18 [in=q]

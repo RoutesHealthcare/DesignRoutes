@@ -1,0 +1,117 @@
+flow 1
+
+# ---------------------------------------------------------------------------
+# Page 0: what find is, in a few cards
+# ---------------------------------------------------------------------------
+page "0. Summary"
+
+summary: container "Find and replace: across every page, on the canvas and in the text" [flow=column gap=4]
+pitch: process "Ctrl+F opens a find bar over the page. It searches shape labels and ids on every page,\nlists what it finds by page, and Enter steps through them: the right tab opens,\nthe shape is selected and scrolled to, and its line is lit in the text pane." 190x24 [fill=#DCE3EB size=13 in=summary]
+points: container [flow=row gap=4 in=summary]
+p1: sticky "One find for both sides\n\nThe canvas and the text\npane light the same match,\nas they show the same file" 60x38 [in=points]
+p2: sticky "Filters, not a query\nlanguage\n\nMatch case, ids only,\nthis page only, by type" 60x38 [in=points]
+p3: sticky "Replace is safe\n\nLabels are replaced as text;\nids go through rename, so\nconnections follow" 60x38 [in=points]
+status: callout "Status: design only. Nothing is built yet.\nCtrl+F and Ctrl+H are free in hot-keys.ts today." 190x18 [in=summary]
+
+# ---------------------------------------------------------------------------
+# Page 1: how a search runs
+# ---------------------------------------------------------------------------
+page "1. How it works" direction LR
+
+type: user "Someone types\nin the find bar"
+parse: process "Parsed model\n(already there,\nfrom the last parse)"
+search: process "Search labels,\nids, connection\nlabels, page names"
+list: document "Matches\npage, shape or line,\nwhere in the text"
+go: process "Enter: next\nShift+Enter: back\nwraps round"
+tab: process "Open its page,\nselect, scroll\ninto view"
+line: process "Light its line\nin the text pane"
+none: alert "No matches:\nthe box turns red"
+
+type -> search
+parse -data-> search
+search -> list : "some"
+search -alt-> none : "none"
+list -> go
+go -> tab
+go -> line
+
+key "Key"
+
+# ---------------------------------------------------------------------------
+# Page 2: the find bar, as a wireframe
+# ---------------------------------------------------------------------------
+page "2. The find bar" size 297x150
+
+win: appwindow "DesignRoutes: orders.flow" @ 10,10 277x130
+bar: search "stock" @ 120,22 90x10
+count: badge "2 of 5" @ 212,23 18x8
+opts: togglechips "Aa | ids | this page | type ▾" @ 120,34 90x9
+nav: segmented "↑ | ↓ | ⋯ Replace" @ 212,34 40x9
+results: list "Orders: check \"In stock?\" | Orders: wait --> pick \"when stock arrives\" | Stock: stock_db \"Stock\" | Stock: reorder \"Restock\" | Returns: restock \"Back into stock\"" @ 120,46 132x40
+canvas: container "Page: Orders" @ 14,22 100x110 [bgfill=#FAFAFA]
+s1: decision "In stock?" @ 40,40 40x20 [stroke=#1F6F78 weight=2.5 in=canvas]
+s2: process "Back-order" @ 40,80 40x14 [in=canvas]
+s1 -alt-> s2 : "no"
+replace: container "Replace (Ctrl+H)" @ 120,92 132x40
+rwith: field "Replace with: stock level" @ 124,102 124x9 [in=replace]
+rbtn: segmented "Replace | Replace all on this page | Replace all" @ 124,116 124x10 [in=replace]
+
+n1: callout "Clicking a result goes to it\nwithout leaving the bar" @ 256,50 30x22 [size=8]
+n2: callout "Esc closes it and keeps\nthe last match selected" @ 256,92 30x22 [size=8]
+
+# ---------------------------------------------------------------------------
+# Page 3: the rules
+# ---------------------------------------------------------------------------
+page "3. Rules"
+
+rules: container "Rules" [flow=row gap=6]
+
+match: container "What matches" [flow=column gap=3 in=rules]
+m1: sticky "Labels as people see them:\n\\n reads as a space,\n| parts are searched\none by one" 60x24 [in=match]
+m2: sticky "Ids, connection labels,\nmeans= text and page names.\nNot settings or colours" 60x22 [in=match]
+m3: sticky "Table columns, grid cells\nand chart names count;\nchart numbers don't" 60x22 [in=match]
+m4: sticky "Plain text, not regex.\nMatch case off by default" 60x18 [in=match]
+
+filters: container "Filters" [flow=column gap=3 in=rules]
+f1: sticky "ids: only shape ids" 60x14 [in=filters]
+f2: sticky "this page: skip the others" 60x14 [in=filters]
+f3: sticky "type: decision, table...\naliases count (rect = process)" 60x18 [in=filters]
+
+repl: container "Replace" [flow=column gap=3 in=rules]
+r1: sticky "Labels: replaced inside the\nlabel text only; one undo\nstep for Replace all" 60x22 [in=repl]
+r2: sticky "Ids: through rename (rename.ts),\nso connections, in= and\nlinks follow. A clash with an\nexisting id is skipped and listed" 60x26 [in=repl]
+r3: sticky "Page names: through the tab\nrename, so links follow" 60x18 [in=repl]
+r4: sticky "Never touches comments\nor icon data" 60x18 [in=repl]
+
+focus: container "Focus" [flow=column gap=3 in=rules]
+k1: sticky "Ctrl+F on the canvas or in\nthe text pane opens the same\nbar, with any selected\ntext filled in" 60x24 [in=focus]
+k2: sticky "In the browser, Ctrl+F is\nonly taken while the app has\nfocus; elsewhere the browser's\nown find still works" 60x24 [in=focus]
+
+# ---------------------------------------------------------------------------
+# Page 4: what's in v1 and what waits
+# ---------------------------------------------------------------------------
+page "4. v1 and later"
+
+phases: container "Scope" [flow=row gap=6]
+
+v1: container "v1" [flow=column gap=3 in=phases]
+v1a: process "Ctrl+F bar, every page,\nresults by page" 70x16 [fill=#DCE3EB in=v1]
+v1b: process "Enter / Shift+Enter step,\ncanvas and text both lit" 70x16 [fill=#DCE3EB in=v1]
+v1c: process "Match case, ids, this page,\ntype filters" 70x16 [fill=#DCE3EB in=v1]
+v1d: process "Ctrl+H replace in labels;\nids through rename" 70x16 [fill=#DCE3EB in=v1]
+
+later: container "Later, only if needed" [flow=column gap=3 in=phases]
+la: process "Go to shape (Ctrl+G):\nfuzzy jump by id or label" 70x16 [in=later]
+lb: process "Select all matches, so a\nfind can feed align or a\nfill change" 70x18 [in=later]
+lc: process "Regex for people\nwho want it" 70x16 [in=later]
+ld: process "Search across several\nfiles (desktop only)" 70x16 [in=later]
+
+# ---------------------------------------------------------------------------
+# Page 5: open questions
+# ---------------------------------------------------------------------------
+page "5. Open questions"
+
+q: container "Open questions" [flow=column gap=4]
+q1: sticky "Does the text pane's editor (text-editor.ts) want its\nown find for raw text, comments included? Or is\none find over the model enough?" 120x20 [in=q]
+q2: sticky "Should matches on other pages be shown on their tabs\n(a count badge), as diff-design.flow marks changes?" 120x18 [in=q]
+q3: sticky "Where the bar lives: a new FindBar.tsx over Stage,\nwith a small store for the query and current match." 120x18 [in=q]

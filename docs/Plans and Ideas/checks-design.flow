@@ -1,0 +1,145 @@
+flow 1
+
+# ---------------------------------------------------------------------------
+# Page 0: what checks are, in a few cards
+# ---------------------------------------------------------------------------
+page "0. Summary"
+
+summary: container "Checks: warnings about what a diagram means, not just its syntax" [flow=column gap=4]
+pitch: process "The parser says whether a line can be read. Checks look at the whole page and say\nwhether it makes sense: a decision with one way out, a step nothing reaches,\na message flow inside one pool. They show on the line, like errors, but never stop anything." 190x24 [fill=#DCE3EB size=13 in=summary]
+points: container [flow=row gap=4 in=summary]
+p1: sticky "Per kind of diagram\n\nFlowchart, BPMN, ER,\nswimlane, sequence and\nchart rules, each small" 60x38 [in=points]
+p2: sticky "Warnings, not errors\n\nThe page is always drawn;\nyou can switch a rule\noff on a line" 60x38 [in=points]
+p3: sticky "Same checks everywhere\n\nThe text pane, Properties\nand check-flow all run\nthe one module" 60x38 [in=points]
+status: callout "Status: design only. Nothing is built yet.\nToday FlowError is { line, msg } with no severity, and check-flow\nhas one warning of its own (connected but never declared)." 190x22 [in=summary]
+
+# ---------------------------------------------------------------------------
+# Page 1: how checks run
+# ---------------------------------------------------------------------------
+page "1. How it works" direction LR
+
+text: script "drawing.flow" [lang=sh]
+parse: process "parseFlow\nunchanged:\nsyntax errors"
+ast: document "FlowAst\npages, shapes,\nedges, keys"
+kind: preparation "Guess each page's\nkinds from its\nshapes and lines"
+rules: process "checks.ts\nrun the rules\nfor those kinds"
+ignore: decision "Switched off\non that line?"
+found: document "Findings\n{ line, msg,\nseverity, rule }"
+gutter: browser "Text pane gutter:\nred error, amber\nwarning, blue info"
+cli: script "check-flow\nprints them;\nexit 1 on errors only" [lang=sh]
+
+text -> parse
+parse -data-> ast
+ast -> kind
+kind -> rules
+rules -> ignore
+ignore -> found : "no"
+ignore -alt-> rules : "yes: drop it"
+found -data-> gutter
+found -data-> cli
+
+key "Key"
+
+# ---------------------------------------------------------------------------
+# Page 2: the rules, by kind of diagram
+# ---------------------------------------------------------------------------
+page "2. Rules"
+
+all: container "Rules (rule id, severity)" [flow=row gap=5]
+
+any: container "Any page" [flow=column gap=3 in=all]
+a1: sticky "undeclared-id (warning)\nconnection to an id with no\nshape line; moved here\nfrom check-flow" 55x24 [in=any]
+a2: sticky "lonely-shape (info)\na step with no connections\non a page that has some\n(notes, text, containers\nand UI shapes left out)" 55x28 [in=any]
+a3: sticky "needs-key (info)\ntwo or more connection\ntypes and no key" 55x22 [in=any]
+a4: sticky "custom-line-no-means (info)\na custom line with no\nmeans= shows as ? in the key" 55x22 [in=any]
+
+flowr: container "Flowchart" [flow=column gap=3 in=all]
+f1: sticky "decision-exits (warning)\na decision with fewer\nthan two ways out" 55x22 [in=flowr]
+f2: sticky "decision-labels (warning)\nan unlabelled line\nout of a decision" 55x22 [in=flowr]
+f3: sticky "dead-end (info)\na step with no way out\nthat isn't a terminator" 55x22 [in=flowr]
+f4: sticky "no-start (info)\nno terminator with\nnothing coming in" 55x22 [in=flowr]
+
+bpmnr: container "BPMN and swimlanes" [flow=column gap=3 in=all]
+b1: sticky "bpmn-start-end (warning)\na process with no start\nevent or no end event" 55x22 [in=bpmnr]
+b2: sticky "message-in-pool (warning)\n-msg-> between two shapes\nin the same pool" 55x22 [in=bpmnr]
+b3: sticky "sequence-across-pools\n(warning) -> between pools;\nshould be -msg->" 55x22 [in=bpmnr]
+b4: sticky "pool-not-lane (info)\na step in a pool that\nhas lanes, but in no lane" 55x22 [in=bpmnr]
+
+datar: container "ER, UML, sequence" [flow=column gap=3 in=all]
+d1: sticky "orphan-table (info)\na table in no relationship\non a page of tables" 55x22 [in=datar]
+d2: sticky "fk-missing (info)\none-to-many with no\n<table>_id column\non the many side" 55x22 [in=datar]
+d3: sticky "inheritance-cycle (error)\n--|> going round in a loop" 55x20 [in=datar]
+d4: sticky "reply-first (info)\na ..> reply before any\ncall between the two" 55x22 [in=datar]
+
+chartr: container "Charts" [flow=column gap=3 in=all]
+c1: sticky "legend-colours (warning)\na chart and the legend\nnext to it with different\ncolours= lists" 55x24 [in=chartr]
+c2: sticky "legend-count (info)\nlegend has a different\nnumber of names than\nthe chart has series" 55x24 [in=chartr]
+c3: sticky "named-count (warning)\ntreemap, sankey, tilemap...\nnames and values differ\nin number" 55x24 [in=chartr]
+
+# ---------------------------------------------------------------------------
+# Page 3: switching a rule off
+# ---------------------------------------------------------------------------
+page "3. Switching off" direction LR
+
+example: codeblock "check: decision \"In stock?\"  #! ignore decision-exits\n\n#! ignore lonely-shape\nlogo: image \"Logo\"\n\npage \"Sketch\"  #! ignore all" @ 15,15 110x36
+
+n1: callout "#! ignore <rule> at the end of a line\nswitches that rule off for that line" @ 140,15 75x14
+n2: callout "On a line of its own: for the\nline straight after it" @ 140,33 75x14
+n3: callout "On a page line: for the whole page.\n'all' switches every check off" @ 140,51 75x14
+
+n1 .. example
+n2 .. example
+n3 .. example
+
+why: callout "#! is still a comment, so older versions of the editor and other tools read\nthe file exactly as before. Errors from the parser can't be switched off." @ 15,70 140x14
+
+# ---------------------------------------------------------------------------
+# Page 4: where findings show
+# ---------------------------------------------------------------------------
+page "4. Where they show" size 297x150
+
+win: appwindow "DesignRoutes: orders.flow" @ 10,10 277x130
+code: codeblock "1  flow 1\n2  page \"Orders\"\n3  start: terminator \"Order placed\"\n4  check: decision \"In stock?\"\n5  pick: process \"Pick and pack\"\n6  start -> check\n7  check -> pick" @ 14,22 120x60
+m1: text "⚠" @ 15,48 7x7 [text=#C99A00 size=12]
+m2: text "⚠" @ 15,62 7x7 [text=#C99A00 size=12]
+tip: tooltip "decision-exits: \"In stock?\" has one way out.\nAdd the other branch, or #! ignore decision-exits" @ 30,84 104x14
+props: process "Checks on this page\n⚠ 2 warnings  ⓘ 1 info\nClick one to go to its line" @ 145,22 70x22 [fill=#F4F6F8]
+canvas: container "Page" @ 145,50 137x85 [bgfill=#FAFAFA]
+s1: terminator "Order placed" @ 155,60 30x12 [in=canvas]
+s2: decision "In stock?" @ 195,56 34x20 [stroke=#C99A00 weight=2 in=canvas]
+s3: process "Pick and pack" @ 240,60 34x12 [in=canvas]
+s1 -> s2
+s2 -> s3
+
+n: callout "The shape gets a thin amber outline\nwhile the pane or Properties shows it" @ 180,110 80x14
+
+# ---------------------------------------------------------------------------
+# Page 5: what's in v1 and what waits
+# ---------------------------------------------------------------------------
+page "5. v1 and later"
+
+phases: container "Scope" [flow=row gap=6]
+
+v1: container "v1" [flow=column gap=3 in=phases]
+v1a: process "severity and rule on\nFlowError (error by default)" 70x16 [fill=#DCE3EB in=v1]
+v1b: process "src/engine/flow/checks.ts:\n(ast) => findings, pure" 70x16 [fill=#DCE3EB in=v1]
+v1c: process "Any-page and flowchart rules,\nplus legend-colours" 70x16 [fill=#DCE3EB in=v1]
+v1d: process "Gutter marks, tooltips,\ncount in Properties" 70x16 [fill=#DCE3EB in=v1]
+v1e: process "#! ignore on a line\nor a page" 70x16 [fill=#DCE3EB in=v1]
+v1f: process "check-flow prints them;\nthe skill bundles checks.ts" 70x16 [fill=#DCE3EB in=v1]
+
+later: container "Later, only if needed" [flow=column gap=3 in=phases]
+la: process "BPMN, ER, UML and\nsequence rules" 70x16 [in=later]
+lb: process "Quick fixes: 'Add a no\nbranch', 'Add a key'" 70x16 [in=later]
+lc: process "Wireframe rules that need\ngeometry (a shape outside\nits device frame)" 70x18 [in=later]
+ld: process "check-flow --strict:\nwarnings fail CI too" 70x16 [in=later]
+
+# ---------------------------------------------------------------------------
+# Page 6: open questions
+# ---------------------------------------------------------------------------
+page "6. Open questions"
+
+q: container "Open questions" [flow=column gap=4]
+q1: sticky "How a page's kind is guessed: any decision means\nflowchart rules apply? Or a page setting\n(page \"x\" kind flowchart) to be explicit?" 120x20 [in=q]
+q2: sticky "Should Visio, draw.io and Mermaid imports run the\nchecks and add them to the import notes?" 120x18 [in=q]
+q3: sticky "Checks run on every keystroke with the parse.\nIf a rule is slow on big pages, run them on idle?" 120x18 [in=q]

@@ -1,0 +1,32 @@
+flow 1
+
+# Decorator: attach extra responsibilities to an individual object dynamically, as an alternative to subclassing.
+
+page "When to use" size 222x177
+
+start: terminator "Adding responsibilities to an object"
+dynamic: decision "Do responsibilities need to be added to individual objects at runtime, without affecting other instances?"
+combo_explosion: decision "Would subclassing for every combination of responsibilities explode the number of classes?"
+subclass: terminator "Use plain subclassing" [fill=#DCE3EB]
+unneeded: terminator "Add the responsibility to the class directly" [fill=#DCE3EB]
+use: terminator "Use Decorator" [fill=#C8E6C9]
+
+start -> dynamic
+dynamic -> combo_explosion : "yes"
+dynamic -> unneeded : "no"
+combo_explosion -> use : "yes"
+combo_explosion -> subclass : "no"
+
+page "Structure" size 336x118 direction LR
+
+component: umlclass "«interface»\nComponent | | +operation()"
+concreteComponent: umlclass "ConcreteComponent | | +operation()"
+decorator: umlclass "Decorator | -component: Component | +operation()"
+concreteDecoratorA: umlclass "ConcreteDecoratorA | | +operation()"
+
+concreteComponent --|> component
+decorator --|> component
+decorator o-- component : "wraps"
+concreteDecoratorA --|> decorator
+
+key "Key"

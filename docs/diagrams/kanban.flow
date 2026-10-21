@@ -1,0 +1,18 @@
+flow 1
+
+# Flexi containers, for the README: a row of columns, each a column of cards. Nothing is placed by hand; the
+# order of the lines is the order on the board, and dragging a card to another spot reorders them.
+
+page "Kanban" size 283x136
+
+board: container "Sprint 12" [flow=row gap=6]
+todo: container "To do" [flow=column in=board]
+doing: container "Doing" [flow=column in=board]
+done: container "Done" [flow=column in=board]
+
+c1: process "Password reset" [in=todo]
+c2: process "Export to PDF" [in=todo]
+c3: process "Dark mode" [in=todo]
+c4: process "Sign-up form" [in=doing]
+c5: process "Login page" [in=done]
+c6: process "Project setup" [in=done]

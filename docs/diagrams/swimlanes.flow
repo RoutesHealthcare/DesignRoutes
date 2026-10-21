@@ -1,0 +1,24 @@
+flow 1
+
+# Containers and swimlanes, for the README. Every box names the lane it's in with [in=...]; nothing is placed by
+# hand, so the lanes are stacked in the pool and each lane is laid out round what's in it.
+
+page "Swimlanes" size 190x142 direction LR
+
+orders: pool "Order process"
+customer: lane "Customer" [in=orders]
+shop: lane "Shop" [in=orders]
+warehouse: lane "Warehouse" [in=orders]
+
+order: terminator "Order placed" [in=customer]
+paid: process "Pay" [in=customer]
+check: decision "In stock?" [in=shop]
+confirm: process "Confirm order" [in=shop]
+pick: process "Pick and pack" [in=warehouse]
+ship: terminator "Shipped" [in=warehouse]
+
+order -> paid
+paid -> check
+check -> confirm : "yes"
+confirm -> pick
+pick -> ship

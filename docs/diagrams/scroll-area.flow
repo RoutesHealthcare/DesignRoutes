@@ -1,0 +1,14 @@
+flow 1
+
+# A scroll area, for the README: it keeps its size, cuts off what doesn't fit and shows how much does in its
+# scrollbar. Here it's a column flexi container too, so the results stack themselves.
+
+page "Scroll area" size 110x100
+
+results: scroll "Search results" @ 15,15 80x70 [flow=column gap=3]
+r1: process "Flow editor: diagrams as text" [in=results]
+r2: process "Swimlanes in five minutes" [in=results]
+r3: process "Importing Visio drawings" [in=results]
+r4: process "Kanban boards with flexi containers" [in=results]
+r5: process "Exporting to draw.io" [in=results]
+r6: process "Keyboard shortcuts" [in=results]

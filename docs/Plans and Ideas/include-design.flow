@@ -1,0 +1,138 @@
+flow 1
+
+# ---------------------------------------------------------------------------
+# Page 0: what includes are, in a few cards
+# ---------------------------------------------------------------------------
+page "0. Summary"
+
+summary: container "Includes: reuse the same parts across drawings" [flow=column gap=4]
+pitch: process "The same header, legend or system context often appears in many drawings.\nStage 1 copies them in: your own patterns, saved from a selection, in the palette.\nStage 2 links them: an include line draws another file's page, kept up to date, desktop only." 190x24 [fill=#DCE3EB size=13 in=summary]
+points: container [flow=row gap=4 in=summary]
+p1: sticky "Copy first\n\nStage 1 adds nothing to\nthe language: a pattern\nis pasted in as lines" 60x38 [in=points]
+p2: sticky "Link only where it's safe\n\nStage 2 needs file access,\nso it's the desktop app\nand the CLI, not the HTML" 60x38 [in=points]
+p3: sticky "One file still works\n\nExport and Save as... can\nflatten includes, so a\nshared file stands alone" 60x38 [in=points]
+status: callout "Status: design only. Nothing is built yet.\nStage 2 bends 'one file is the whole drawing', so it waits until stage 1 is used." 190x18 [in=summary]
+
+# ---------------------------------------------------------------------------
+# Page 1: stage 1, your own patterns
+# ---------------------------------------------------------------------------
+page "1. Own patterns" direction LR
+
+select: user "Select some\nshapes"
+save: process "Save as pattern\nname it, pick a\npalette group"
+store: database "Where it's kept\nbrowser: IndexedDB\ndesktop: a patterns\nfolder of .flow files"
+palette: browser "Palette\n'My patterns' group,\nnext to the built-in\npatterns"
+place: process "Click or drag:\nthe lines are pasted,\nids made unique"
+share: document "Export / import a\npatterns .flow file\nto share a set"
+
+select -> save
+save -data-> store
+store -data-> palette
+palette -> place
+store <-> share
+
+key "Key"
+
+s1note: callout "Placing one works like the built-in patterns do now: a group of shapes with its layout kept,\nids renamed if they clash, with in= and connections following (patternLines in src/shapes/patterns.ts)." @ 15,90 170x14
+
+# ---------------------------------------------------------------------------
+# Page 2: stage 2, the include line
+# ---------------------------------------------------------------------------
+page "2. Include syntax" direction LR
+
+example: codeblock "page \"Checkout\"\nctx: include \"shared/c4.flow\" page \"Context\" @ 10,10\nhdr: include \"shared/brand.flow\" page \"Header\" @ 0,0\n\npay: process \"Take payment\" @ 60,80\nctx.web -> pay : \"calls\"\npay -data-> ctx.bank" @ 15,15 120x45
+
+n1: callout "include is a shape type: the id names the\nwhole included page, and @ places it" @ 150,15 80x14
+n2: callout "Path is relative to this file;\npage picks one page of it" @ 150,32 80x14
+n3: callout "ctx.web means shape web inside ctx.\nIds can't hold a dot, so this can't\nclash with a real id" @ 150,49 80x18
+
+n1 .. example
+n2 .. example
+n3 .. example
+
+look: callout "Included shapes are drawn as they are in their file, behind a faint lock.\nThey can't be edited here: double-click opens the source file." @ 15,75 150x14
+
+# ---------------------------------------------------------------------------
+# Page 3: how stage 2 resolves
+# ---------------------------------------------------------------------------
+page "3. How it resolves" direction LR
+
+file: script "checkout.flow" [lang=sh]
+parse: process "parseFlow\nsees include lines"
+fetch: process "Read each file\n(desktop: from disk;\nCLI: from disk)"
+cycle: decision "Already being\nincluded?"
+sub: process "Parse that page;\nprefix its ids\nwith ctx."
+merge: preparation "Place it at @,\nas one locked\ngroup"
+draw: browser "Canvas"
+err: alert "Error on the line:\nmissing file, page,\nor a loop"
+watch: process "Desktop: watch the\nfile, redraw when\nit changes"
+
+file -> parse
+parse -> fetch
+fetch -> cycle
+cycle -> sub : "no"
+cycle -alt-> err : "yes"
+fetch -alt-> err : "not found"
+sub -> merge
+merge -> draw
+watch -data-> fetch
+
+key "Key"
+
+# ---------------------------------------------------------------------------
+# Page 4: the rules
+# ---------------------------------------------------------------------------
+page "4. Rules"
+
+rules: container "Rules" [flow=row gap=6]
+
+where: container "Where it works" [flow=column gap=3 in=rules]
+w1: sticky "Desktop app and CLI: read\nfrom disk next to the file" 60x20 [in=where]
+w2: sticky "Single HTML in a browser:\na grey box with the path\nand 'open in the desktop\napp', never an error" 60x24 [in=where]
+w3: sticky "Formats out (Visio, PNG,\nMermaid...): includes are\nflattened into plain shapes" 60x22 [in=where]
+
+refs: container "Referring into it" [flow=column gap=3 in=rules]
+r1: sticky "ctx.id in connections only;\nnot in in= (can't put your\nshapes inside someone\nelse's container)" 60x24 [in=refs]
+r2: sticky "If the source renames or\ndeletes an id, ctx.id\nbecomes an error here" 60x22 [in=refs]
+r3: sticky "Includes inside included\nfiles work, up to 8 deep;\na loop is an error" 60x22 [in=refs]
+
+flat: container "Flattening" [flow=column gap=3 in=rules]
+f1: sticky "Save as... offers 'make it\nstand alone': include lines\nbecome the shapes they draw,\nids prefixed ctx-" 60x26 [in=flat]
+f2: sticky "Icons the included page uses\nare copied to the top of\nthe file" 60x22 [in=flat]
+
+# ---------------------------------------------------------------------------
+# Page 5: what's in each stage
+# ---------------------------------------------------------------------------
+page "5. Stages"
+
+phases: container "Scope" [flow=row gap=6]
+
+st1: container "Stage 1: own patterns" [flow=column gap=3 in=phases]
+a1: process "Save selection as pattern" 70x14 [fill=#DCE3EB in=st1]
+a2: process "'My patterns' palette group" 70x14 [fill=#DCE3EB in=st1]
+a3: process "Stored per browser /\nin a desktop folder" 70x16 [fill=#DCE3EB in=st1]
+a4: process "Share as a .flow file" 70x14 [fill=#DCE3EB in=st1]
+
+st2: container "Stage 2: linked includes" [flow=column gap=3 in=phases]
+b1: process "include shape type,\npath + page" 70x16 [in=st2]
+b2: process "ctx.id references\nin connections" 70x16 [in=st2]
+b3: process "Locked drawing,\nopen source on\ndouble-click" 70x18 [in=st2]
+b4: process "Flatten on export\nand Save as" 70x16 [in=st2]
+b5: process "File watching in\nthe desktop app" 70x16 [in=st2]
+
+checks: container "Checker messages (stage 2)" [flow=column gap=3 in=phases]
+c1: inlineerror "Error: can't find \"shared/c4.flow\"" 70x12 [in=checks]
+c2: inlineerror "Error: no page \"Context\" in it" 70x12 [in=checks]
+c3: inlineerror "Error: include loop:\na → b → a" 70x14 [in=checks]
+c4: inlineerror "Error: no shape \"web\" in ctx" 70x12 [in=checks]
+c5: inlineerror "Error: in= can't name an\nincluded shape" 70x14 [in=checks]
+
+# ---------------------------------------------------------------------------
+# Page 6: open questions
+# ---------------------------------------------------------------------------
+page "6. Open questions"
+
+q: container "Open questions" [flow=column gap=4]
+q1: sticky "Could the browser build do stage 2 by asking for the\nfolder once (the File System Access API), the way\nOpen and Save already use file handles?" 120x20 [in=q]
+q2: sticky "Should an include be allowed a different size (WxH\nscaling the whole page), or always drawn 1:1?" 120x18 [in=q]
+q3: sticky "Does stage 1 need a way to update every copy of a\npattern? If people ask for that, it's stage 2." 120x18 [in=q]

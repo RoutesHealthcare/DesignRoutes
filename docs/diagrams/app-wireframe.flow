@@ -1,0 +1,118 @@
+flow 1
+page "1 Editor" size 425x326 direction LR
+
+# DesignRoutes's own screen, wireframed in DesignRoutes. The numbered badges match the regions in
+# docs/app-plan.md. Shapes later in the file are drawn on top, so the window comes first.
+
+win: browser "DesignRoutes" @ 10,10 400x250
+toolbar: navbar "DesignRoutes | New | Open | Save | Save as | Import | Export | Undo | Redo | − 100% + | Fit | Tour" @ 12,47 396x12
+palette: sidebar "Connect | Text | Flowchart | Database | UI wireframe | BI / dashboards | Systems" @ 12,62 42x170
+stage: process "" @ 56,62 190x170 [fill=#E9EEF2]
+paper: process "" @ 64,70 174x140
+s1: terminator "Start" @ 80,78 36x11
+s2: process "Step" @ 80,98 36x13
+s3: decision "OK?" @ 80,120 36x20
+s4: process "Retry" @ 140,122 36x16
+paneTitle: text "Text" @ 249,62 14x9
+paneLang: dropdown "Flow (live)" @ 264,62 36x9
+panePin: button "Pin" @ 302,62 15x9
+paneHide: button "Hide" @ 319,62 17x9
+paneCode: textarea "flow 1\npage \"Page 1\"\ns1: terminator \"Start\" @ 17.5,14.8\ns2: process \"Step\" @ 17.5,46\ns3: decision \"OK?\" @ 10,79.4\ns4: process \"Retry\" @ 85,88.4\ns1 -> s2\ns2 -> s3\ns3 -> s4 : \"no\"" @ 249,74 87x158
+propsTitle: text "Page" @ 339,62 69x9
+propsName: field "Page 1" @ 339,73 69x9
+propsSize: dropdown "Custom" @ 339,85 69x9
+propsW: field "297" @ 339,97 33x9
+propsH: field "210" @ 375,97 33x9
+propsFit: button "Fit page to content" @ 339,110 69x10
+propsDel: button "Delete this page" @ 339,123 69x10 [fill=#FBEAEA]
+propsMore: accordion "Getting started | Connections | Shortcuts" @ 339,138 69x60
+tabs: tabs "Page 1 | Page 2 | +" @ 12,235 120x10
+toast: alert "Opened example.flow." @ 120,217 100x10
+
+# Each connection is drawn just above the later of the shapes it joins, so these show over the stage.
+s1 -> s2
+s2 -> s3
+s3 -> s4 : "no"
+
+b1: badge "1" @ 400,44 8x6
+b2: badge "2" @ 44,64 8x6
+b3: badge "3" @ 236,64 8x6
+b4: badge "4" @ 326,76 8x6
+b5: badge "5" @ 398,64 8x6
+b6: badge "6" @ 122,236 8x6
+b7: badge "7" @ 222,219 8x6
+
+notes: text "1 Toolbar: file, history and view commands; each has a keyboard shortcut\n2 Palette: click a shape to add it in the middle of the view, or drag it onto the page\n3 Stage: the page; select, move, resize, connect and edit text in place\n4 Text pane: the page as .flow text, live in both directions; Ctrl+E shows or hides it\n5 Properties: the page when nothing is selected, otherwise the selection (page 3)\n6 Page tabs: one per page; + adds one\n7 Toast: a short confirmation that fades by itself" @ 10,266 400x45
+
+page "2 Dialogs and tour" size 467x190 direction LR
+
+exp: process "" @ 10,10 150x125
+expTitle: text "Export this page" @ 14,13 70x9
+expFmt: dropdown "Format: Mermaid" @ 14,25 70x9
+expName: field "diagram" @ 86,25 70x9
+expText: textarea "flowchart LR\n  s1([Start]) --> s2[Step]\n  s2 --> s3{OK?}\n  s3 -- no --> s4[Retry]" @ 14,38 142x58
+expNotes: text "Notes: anything this format can't carry" @ 14,99 142x8
+expCopy: button "Copy" @ 62,113 28x10
+expDown: button "Download" @ 92,113 34x10
+expClose: button "Close" @ 128,113 28x10 [fill=#1F6F78 text=#FFFFFF]
+
+imp: process "" @ 175,10 150x125
+impTitle: text "Import a diagram" @ 179,13 70x9
+impFmt: dropdown "Format: Detect automatically" @ 179,25 70x9
+impDest: dropdown "Put it on: A new page" @ 251,25 70x9
+impText: textarea "Paste Mermaid, PlantUML, DOT or draw.io text, or choose a file" @ 179,38 142x58
+impNotes: text "Notes: what was understood, and what wasn't" @ 179,99 142x8
+impFile: button "Choose file…" @ 179,113 34x10
+impCancel: button "Cancel" @ 249,113 34x10
+impGo: button "Import" @ 287,113 34x10 [fill=#1F6F78 text=#FFFFFF]
+
+tour: tooltip "2 of 9 - Add a shape: click Process in the palette" @ 340,10 100x30
+tourEnd: button "End tour" @ 340,44 32x10
+tourNext: button "Next" @ 408,44 32x10 [fill=#1F6F78 text=#FFFFFF]
+
+textTab: button "Text" @ 340,70 22x10
+textTabNote: text "When the text pane is hidden, this tab on the stage's edge brings it back" @ 366,68 74x14
+
+b8: badge "8" @ 150,12 8x6
+b9: badge "9" @ 315,12 8x6
+b10: badge "10" @ 442,4 10x6
+b11: badge "11" @ 340,84 10x6
+
+notes2: text "8 Export: the page as Mermaid, PlantUML, DOT, draw.io, PNG or PDF, previewed before it's saved\n9 Import: text or a file, onto a new page or this one; notes say what didn't come across\n10 Tour: nine steps over the real UI, most waiting until you've done them; runs by itself on a first visit, replayed from the toolbar\n11 Text tab: brings the text pane back when it's hidden" @ 10,145 430x30
+
+page "3 Selection" size 305x232 direction LR
+
+shp: process "" @ 10,10 85x175
+shpTitle: text "Shape: process" @ 14,13 70x9
+shpText: textarea "Step" @ 14,25 77x20
+shpW: field "38" @ 14,49 37x9
+shpH: field "13" @ 54,49 37x9
+shpFill: dropdown "Fill" @ 14,62 77x9
+shpLine: dropdown "Line" @ 14,74 77x9
+shpTextCol: dropdown "Text colour" @ 14,86 77x9
+shpWeight: dropdown "Line weight" @ 14,98 77x9
+shpFront: button "Bring to front" @ 14,114 37x10
+shpBack: button "Send to back" @ 54,114 37x10
+shpDel: button "Delete" @ 14,128 77x10 [fill=#FBEAEA]
+
+con: process "" @ 105,10 85x175
+conTitle: text "Connection" @ 109,13 70x9
+conType: dropdown "Type: Sequence" @ 109,25 77x9
+conRoute: dropdown "Route: Elbow" @ 109,37 77x9
+conLine: dropdown "Line: Solid" @ 109,49 77x9
+conStart: dropdown "Start: None" @ 109,61 37x9
+conEnd: dropdown "End: Arrow" @ 149,61 37x9
+conMeans: field "Meaning shown in the key" @ 109,73 77x9
+conRev: button "Reverse direction" @ 109,88 77x10
+conDel: button "Delete" @ 109,102 77x10 [fill=#FBEAEA]
+
+pic: process "" @ 200,10 85x95
+picTitle: text "Image" @ 204,13 70x9
+picChoose: button "Change picture…" @ 204,25 77x10
+picNote: text "Pictures are stored in the .flow text as an icon, so the file stays one file" @ 204,40 77x24
+
+b12: badge "12" @ 83,12 10x6
+b13: badge "13" @ 178,12 10x6
+b14: badge "14" @ 273,12 10x6
+
+notes3: text "12 Shape: its text, size, colours and order; extra rows appear for tables, grids, charts and switches\n13 Connection: type, route and ends, and the meaning shown in the page's key\n14 Image: choose or change the picture" @ 10,195 280x22

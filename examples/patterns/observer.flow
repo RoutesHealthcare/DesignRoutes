@@ -1,0 +1,31 @@
+flow 1
+
+# Observer: when one object's state changes, notify a list of dependents automatically without the subject knowing their concrete types.
+
+page "When to use" size 198x177
+
+start: terminator "One object's state matters to others"
+multiple_watchers: decision "Do multiple objects need to react when one object's state changes?"
+decoupled: decision "Should the subject stay decoupled from the concrete classes of its watchers?"
+direct_calls: terminator "Call the dependents directly" [fill=#DCE3EB]
+unneeded: terminator "No pattern needed" [fill=#DCE3EB]
+use: terminator "Use Observer" [fill=#C8E6C9]
+
+start -> multiple_watchers
+multiple_watchers -> decoupled : "yes"
+multiple_watchers -> unneeded : "no"
+decoupled -> use : "yes"
+decoupled -> direct_calls : "no"
+
+page "Structure" size 354x118 direction LR
+
+subject: umlclass "Subject | -observers: Observer[] | +attach(o)\n+detach(o)\n+notify()"
+observer: umlclass "«interface»\nObserver | | +update()"
+concreteSubject: umlclass "ConcreteSubject | -state | +getState()"
+concreteObserver: umlclass "ConcreteObserver | | +update()"
+
+concreteSubject --|> subject
+concreteObserver --|> observer
+subject o-- observer : "notifies"
+
+key "Key"

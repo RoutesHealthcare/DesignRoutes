@@ -1,0 +1,134 @@
+flow 1
+
+# ---------------------------------------------------------------------------
+# Page 0: what links are, in a few cards
+# ---------------------------------------------------------------------------
+page "0. Summary"
+
+summary: container "Links: click a shape to go to a page, a shape or a web address" [flow=column gap=4]
+pitch: process "One new shape setting, link=, takes you somewhere when the shape is clicked:\nanother page of the drawing, a shape on a page, or a URL.\nAn overview page can open into detail pages, and an off-page connector really goes off-page." 190x24 [fill=#DCE3EB size=13 in=summary]
+points: container [flow=row gap=4 in=summary]
+p1: sticky "One setting\n\n[link=\"2. Details\"]\nworks on any shape,\nlike fill= does" 60x38 [in=points]
+p2: sticky "Kept through renames\n\nRenaming a page or an id\nrewrites the links that\npoint at it" 60x38 [in=points]
+p3: sticky "Survives export\n\nVisio, draw.io, SVG and PDF\nall have links; formats\nwithout them say so" 60x38 [in=points]
+status: callout "Status: design only. Nothing is built yet.\nPairs well with present mode in animations-design.flow." 190x18 [in=summary]
+
+# ---------------------------------------------------------------------------
+# Page 1: the syntax
+# ---------------------------------------------------------------------------
+page "1. Syntax" direction LR
+
+example: codeblock "page \"0. Overview\"\nweb: c4system \"Shop\" [link=\"1. Shop\"]\npay: c4external \"Payments\" [link=\"https://docs.example.com/pay\"]\nmore: offPage \"B\" [link=\"2. Returns#refund\"]\nback: button \"Back to top\" [link=\"#web\"]\n\npage \"1. Shop\"\n...\npage \"2. Returns\"\nrefund: process \"Refund\"" @ 15,15 120x60
+
+n1: callout "A page: its name, exactly\nas in its page line" @ 150,15 75x14
+n2: callout "A web address: anything starting\nhttp://, https:// or mailto:" @ 150,32 75x14
+n3: callout "A shape on another page:\npage name, #, then the id" @ 150,49 75x14
+n4: callout "A shape on this page: # and the id.\nThe view scrolls to it and selects it" @ 150,66 75x14
+
+n1 .. example
+n2 .. example
+n3 .. example
+n4 .. example
+
+rule: callout "The last # splits page from id, so a page name may hold a #\nas long as a link to it ends with #id or the name has no id part." @ 15,85 120x14
+
+# ---------------------------------------------------------------------------
+# Page 2: how clicking works
+# ---------------------------------------------------------------------------
+page "2. Clicking" direction LR
+
+click: user "Someone\nclicks a shape"
+mode: decision "Which mode?"
+edit: process "Edit mode:\nclick selects as now;\nclick the ↗ badge,\nor Ctrl+Enter, follows"
+present: process "Present / view mode:\na plain click follows"
+kind: decision "Link to?"
+topage: process "Switch to that\npage tab"
+shape: process "Switch page if needed,\nscroll to the shape,\nselect it, flash it"
+url: process "Open in the browser\n(desktop: the system\nbrowser)"
+history: database "History\nAlt+← goes back,\nAlt+→ forward"
+missing: alert "Link goes nowhere:\na toast, nothing moves"
+
+click -> mode
+mode -> edit : "editing"
+mode -> present : "presenting"
+edit -> kind
+present -> kind
+kind -> topage : "a page"
+kind -> shape : "#id"
+kind -> url : "http(s), mailto"
+kind -alt-> missing : "no such page\nor id"
+topage -data-> history
+shape -data-> history
+
+key "Key"
+
+hint: callout "A linked shape shows a small ↗ in its top-right corner while editing,\nand its tooltip shows where it goes. Exports don't draw the ↗." 120x14
+hint .. edit
+
+# ---------------------------------------------------------------------------
+# Page 3: the rules
+# ---------------------------------------------------------------------------
+page "3. Rules"
+
+rules: container "Rules" [flow=row gap=6]
+
+parse: container "Reading it" [flow=column gap=3 in=rules]
+r1: sticky "link= is a shape setting,\nquoted text, on any shape\nincluding containers" 60x22 [in=parse]
+r2: sticky "A page or id that doesn't\nexist: an error on the line,\nthe shape is still drawn\n(like in= naming nothing)" 60x26 [in=parse]
+r3: sticky "Links can't run code:\njavascript: and data: are\nerrors, so a shared file\ncan't do harm" 60x26 [fill=#F4C7C3 in=parse]
+r4: sticky "Connections don't take\nlinks in v1" 60x18 [in=parse]
+
+renames: container "Keeping them right" [flow=column gap=3 in=rules]
+k1: sticky "Renaming a page in its tab\nrewrites every link to it,\nin one undo step" 60x22 [in=renames]
+k2: sticky "Renaming an id (rename.ts)\nrewrites #id links too" 60x20 [in=renames]
+k3: sticky "Deleting the target leaves\nthe link, now an error,\nso it isn't lost silently" 60x22 [in=renames]
+
+props: container "In the editor" [flow=column gap=3 in=rules]
+e1: sticky "Properties: a Link row with\na page picker, an id picker\nand a free text box" 60x22 [in=props]
+e2: sticky "IntelliSense after link=\"\nsuggests page names,\nthen ids after #" 60x22 [in=props]
+e3: sticky "Ctrl+K on a selected shape\nopens the Link row\n(listed in Properties)" 60x22 [in=props]
+
+# ---------------------------------------------------------------------------
+# Page 4: links in other formats
+# ---------------------------------------------------------------------------
+page "4. Formats"
+
+fmt: grid { Format, "Page or #id link", URL link, Note; Visio, Hyperlink SubAddress, Hyperlink Address, round-trips both ways; draw.io, "data:page/id link", link attribute, round-trips; SVG, dropped, "a href", "one SVG per page, so page links go"; PDF, internal link, external link, "if the PDF writer allows (question)"; PNG, dropped, dropped, reported in the export notes; Mermaid, dropped, "click id href", reported; PlantUML, dropped, "[[url]]", reported; DOT, dropped, URL attribute, reported } @ 15,15 220x70
+
+fnote: callout "Principle 6: say what was lost. Every export that drops a link\nlists it in the export dialog's notes, as it does for other settings." @ 15,92 140x14
+
+# ---------------------------------------------------------------------------
+# Page 5: what's in v1 and what waits
+# ---------------------------------------------------------------------------
+page "5. v1 and later"
+
+phases: container "Scope" [flow=row gap=6]
+
+v1: container "v1" [flow=column gap=3 in=phases]
+v1a: process "link= on shapes: page,\n#id, page#id, URL" 70x16 [fill=#DCE3EB in=v1]
+v1b: process "↗ badge or Ctrl+Enter while\nediting; click when presenting" 70x16 [fill=#DCE3EB in=v1]
+v1c: process "Back / forward history" 70x14 [fill=#DCE3EB in=v1]
+v1d: process "Rename keeps links right" 70x14 [fill=#DCE3EB in=v1]
+v1e: process "Visio and draw.io round-trip;\nSVG and PDF export" 70x16 [fill=#DCE3EB in=v1]
+v1f: process "Properties row, IntelliSense,\nCtrl+K" 70x16 [fill=#DCE3EB in=v1]
+
+later: container "Later, only if needed" [flow=column gap=3 in=phases]
+la: process "Links on connections" 70x14 [in=later]
+lb: process "Links to another .flow file\n(desktop only; see\ninclude-design.flow)" 70x18 [in=later]
+lc: process "A read-only 'view' export:\nthe single HTML opening a\ndrawing for clicking through" 70x18 [in=later]
+ld: process "Backlinks: Properties lists\nwhat links to this shape" 70x16 [in=later]
+
+checks: container "Checker messages (v1)" [flow=column gap=3 in=phases]
+c1: inlineerror "Error: there is no page \"x\"" 70x12 [in=checks]
+c2: inlineerror "Error: there is no shape \"y\"\non page \"x\"" 70x14 [in=checks]
+c3: inlineerror "Error: links can only go to a page,\na shape, http(s) or mailto" 70x14 [in=checks]
+
+# ---------------------------------------------------------------------------
+# Page 6: open questions
+# ---------------------------------------------------------------------------
+page "6. Open questions"
+
+q: container "Open questions" [flow=column gap=4]
+q1: sticky "Should an offPage connector with no link find its\npartner by label (two offPage \"B\" shapes) and\nlink itself, the way Visio's off-page reference does?" 120x20 [in=q]
+q2: sticky "Following while editing: Ctrl/Shift+click already add to the\nselection and Alt+click picks the shape underneath (pointer.ts),\nso v1 uses the ↗ badge and Ctrl+Enter (hot-keys.ts treats any\nEnter as 'edit text' today, so that check must skip Ctrl).\nIs the badge easy to hit on a small shape, or does it need a hover zone?" 120x28 [in=q]
+q3: sticky "Where it hooks in: SHAPE_ATTRS in language.ts gains\n'link'; render.ts draws the ↗; pointer.ts follows it." 120x18 [in=q]

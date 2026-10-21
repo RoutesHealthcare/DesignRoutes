@@ -1,0 +1,399 @@
+flow 1
+
+# Every palette shape, one page per palette group, drawn with its default text and sample values.
+# Generated from PALETTE by tests/docs/images.spec.js on every test run; edits here are overwritten.
+
+page "Flowchart" size 387x224 direction LR
+
+text: text "Text" @ 34,20.9 38.1x10.2
+text_cap: text "Text (text)" @ 10,45 86x8
+process: process "" @ 126,16.5 38.1x19
+process_cap: text "Process (process)" @ 102,45 86x8
+decision: decision "" @ 217.9,13.3 38.1x25.4
+decision_cap: text "Decision (decision)" @ 194,45 86x8
+terminator: terminator "" @ 309.9,18.4 38.1x15.2
+terminator_cap: text "Start / end (terminator)" @ 286,45 86x8
+data: data "" @ 34,68.5 38.1x19
+data_cap: text "Data (data)" @ 10,97 86x8
+subprocess: subprocess "" @ 126,68.5 38.1x19
+subprocess_cap: text "Subprocess (subprocess)" @ 102,97 86x8
+document: document "" @ 217.9,67.2 38.1x21.6
+document_cap: text "Document (document)" @ 194,97 86x8
+multidoc: multidoc "" @ 308.7,66 40.6x24.1
+multidoc_cap: text "Documents (multidoc)" @ 286,97 86x8
+manualInput: manualInput "" @ 34,120.5 38.1x19
+manualInput_cap: text "Manual input (manualInput)" @ 10,149 86x8
+manualOp: manualOp "" @ 126,120.5 38.1x19
+manualOp_cap: text "Manual operation (manualOp)" @ 102,149 86x8
+preparation: preparation "" @ 217.9,120.5 38.1x19
+preparation_cap: text "Preparation (preparation)" @ 194,149 86x8
+delay: delay "" @ 312.5,120.5 33x19
+delay_cap: text "Delay (delay)" @ 286,149 86x8
+offPage: offPage "" @ 42.9,171.8 20.3x20.3
+offPage_cap: text "Off-page link (offPage)" @ 10,201 86x8
+ellipse: ellipse "" @ 129.8,171.8 30.5x20.3
+ellipse_cap: text "Ellipse (ellipse)" @ 102,201 86x8
+
+page "Database" size 203x68 direction LR
+
+database: database "" @ 37.8,12.1 30.5x27.9
+database_cap: text "Database (database)" @ 10,45 86x8
+table: table "" @ 119.6,10.1 50.8x31.8
+table_cap: text "Table (table)" @ 102,45 86x8
+
+page "UI wireframe" size 387x1056 direction LR
+
+browser: browser "Page content" @ 29,10 48x32
+browser_cap: text "Browser (browser)" @ 10,45 86x8
+mobile: mobile "Screen" @ 136.6,10 16.8x32
+mobile_cap: text "Mobile screen (mobile)" @ 102,45 86x8
+tablet: tablet "Screen" @ 215.1,10 43.8x32
+tablet_cap: text "Tablet (tablet)" @ 194,45 86x8
+smartwatch: smartwatch "10:09" @ 318.4,10 21.3x32
+smartwatch_cap: text "Smartwatch (smartwatch)" @ 286,45 86x8
+appwindow: appwindow "My app" @ 29,62 48x32
+appwindow_cap: text "App window (appwindow)" @ 10,97 86x8
+field: field "Text field" @ 119.6,73.5 50.8x8.9
+field_cap: text "Text field (field)" @ 102,97 86x8
+button: button "Button" @ 221.8,72.9 30.5x10.2
+button_cap: text "Button (button)" @ 194,97 86x8
+dropdown: dropdown "Select…" @ 303.6,73.5 50.8x8.9
+dropdown_cap: text "Dropdown (dropdown)" @ 286,97 86x8
+checkbox: checkbox "Checkbox" @ 32.7,126.2 40.6x7.6
+checkbox_cap: text "Checkbox (checkbox)" @ 10,149 86x8
+radio: radio "Option" @ 124.7,126.2 40.6x7.6
+radio_cap: text "Radio button (radio)" @ 102,149 86x8
+progress: progress "75%" @ 224.3,117.3 25.4x25.4
+progress_cap: text "Progress ring (progress)" @ 194,149 86x8
+progressbar: progressbar "60%" @ 303.6,126.2 50.8x7.6
+progressbar_cap: text "Progress bar (progressbar)" @ 286,149 86x8
+switch: switch "Switch" @ 32.7,178.2 40.6x7.6
+switch_cap: text "Switch (switch)" @ 10,201 86x8
+slider: slider "40%" @ 119.6,178.2 50.8x7.6
+slider_cap: text "Slider (slider)" @ 102,201 86x8
+password: password "••••••••" @ 211.6,177.6 50.8x8.9
+password_cap: text "Password (password)" @ 194,201 86x8
+numberinput: numberinput "1" @ 311.2,177.6 35.6x8.9
+numberinput_cap: text "Number input (numberinput)" @ 286,201 86x8
+segmented: segmented "Day | Week | Month" @ 22.5,229.6 61x8.9
+segmented_cap: text "Segmented (segmented)" @ 10,253 86x8
+search: search "Search…" @ 119.6,229.6 50.8x8.9
+search_cap: text "Search box (search)" @ 102,253 86x8
+textarea: textarea "Write a message…" @ 211.6,221.3 50.8x25.4
+textarea_cap: text "Text area (textarea)" @ 194,253 86x8
+datepicker: datepicker "dd/mm/yyyy" @ 303.6,229.6 50.8x8.9
+datepicker_cap: text "Date picker (datepicker)" @ 286,253 86x8
+timepicker: timepicker "hh:mm" @ 27.6,281.6 50.8x8.9
+timepicker_cap: text "Time picker (timepicker)" @ 10,305 86x8
+colourpicker: colourpicker "#1F6F78" @ 119.6,281.6 50.8x8.9
+colourpicker_cap: text "Colour picker (colourpicker)" @ 102,305 86x8
+upload: upload "Drop files here or browse" @ 206.5,270.8 61x30.5
+upload_cap: text "File upload (upload)" @ 194,305 86x8
+otp: otp "4 | 7 | 1 | 9 | 2 | 6" @ 298.5,280.3 61x11.4
+otp_cap: text "Code boxes (otp)" @ 286,305 86x8
+togglechips: togglechips "✓ Wi-Fi | ✓ Parking | Pool" @ 20,333.9 66x8.1
+togglechips_cap: text "Toggle chips (togglechips)" @ 10,357 86x8
+rangeslider: rangeslider "20–70%" @ 119.6,334.2 50.8x7.6
+rangeslider_cap: text "Range slider (rangeslider)" @ 102,357 86x8
+formfield: formfield "Email | name@example.com | Enter a valid email address" @ 206.5,326.6 61x22.9
+formfield_cap: text "Form field (formfield)" @ 194,357 86x8
+spinner: spinner "" @ 322.6,331.6 12.7x12.7
+spinner_cap: text "Spinner (spinner)" @ 286,357 86x8
+skeleton: skeleton "" @ 22.5,379.9 61x20.3
+skeleton_cap: text "Skeleton (skeleton)" @ 10,409 86x8
+toast: toast "Message sent" @ 112,384.3 66x11.4
+toast_cap: text "Toast (toast)" @ 102,409 86x8
+emptystate: emptystate "Nothing here yet" @ 213,374 48x32
+emptystate_cap: text "Empty state (emptystate)" @ 194,409 86x8
+inlineerror: inlineerror "Enter a valid email address" @ 301.1,386.2 55.9x7.6
+inlineerror_cap: text "Inline error (inlineerror)" @ 286,409 86x8
+dropdownmenu: dropdownmenu "Sort by | Newest | Oldest | Most popular" @ 30.1,426 45.7x32
+dropdownmenu_cap: text "Open dropdown (dropdownmenu)" @ 10,461 86x8
+contextmenu: contextmenu "Cut | Copy | Paste | Delete" @ 124.7,426.8 40.6x30.5
+contextmenu_cap: text "Context menu (contextmenu)" @ 102,461 86x8
+menubar: menubar "File | Edit | View | Help" @ 196.3,438.2 81.3x7.6
+menubar_cap: text "Menu bar (menubar)" @ 194,461 86x8
+tabbar: tabbar "Home | Search | Profile" @ 290.9,433.8 76.2x16.5
+tabbar_cap: text "Bottom tab bar (tabbar)" @ 286,461 86x8
+fab: fab "" @ 45.4,486.4 15.2x15.2
+fab_cap: text "Action button (fab)" @ 10,513 86x8
+backheader: backheader "Settings" @ 106.9,487.6 76.2x12.7
+backheader_cap: text "Back header (backheader)" @ 102,513 86x8
+divider: divider "or" @ 198.9,490.9 76.2x6.3
+divider_cap: text "Divider (divider)" @ 194,513 86x8
+footer: footer "© Acme | Privacy | Terms | Contact" @ 286,489.1 86x9.7
+footer_cap: text "Footer (footer)" @ 286,513 86x8
+hero: hero "A big headline\nWhy it matters" @ 21,530 64x32
+hero_cap: text "Hero section (hero)" @ 10,565 86x8
+splitpane: splitpane "Files | Preview" @ 113,530 64x32
+splitpane_cap: text "Split pane (splitpane)" @ 102,565 86x8
+scrollbar: scrollbar "" @ 235.6,530 2.9x32
+scrollbar_cap: text "Scroll bar (scrollbar)" @ 194,565 86x8
+navbar: navbar "Brand | Home | About | Contact" @ 286,541.1 86x9.7
+navbar_cap: text "Nav bar (navbar)" @ 286,565 86x8
+modal: modal "Delete this file?\nThis can't be undone." @ 26.4,582 53.3x32
+modal_cap: text "Modal dialog (modal)" @ 10,617 86x8
+card: card "Card title\nA line about it" @ 130.6,582 28.8x32
+card_cap: text "Card (card)" @ 102,617 86x8
+alert: alert "Your changes have been saved." @ 196.3,592.3 81.3x11.4
+alert_cap: text "Alert banner (alert)" @ 194,617 86x8
+tooltip: tooltip "More about this" @ 308.7,591.6 40.6x12.7
+tooltip_cap: text "Tooltip (tooltip)" @ 286,617 86x8
+avatar: avatar "AB" @ 45.4,642.4 15.2x15.2
+avatar_cap: text "Avatar (avatar)" @ 10,669 86x8
+badge: badge "New" @ 134.8,646.5 20.3x7.1
+badge_cap: text "Badge (badge)" @ 102,669 86x8
+rating: rating "4/5" @ 216.7,646.2 40.6x7.6
+rating_cap: text "Star rating (rating)" @ 194,669 86x8
+glyph: glyph "" @ 323.9,644.9 10.2x10.2
+glyph_cap: text "Icon (glyph)" @ 286,669 86x8
+tabs: tabs "Home | Profile | Settings" @ 14.9,696.9 76.2x10.2
+tabs_cap: text "Tabs (tabs)" @ 10,721 86x8
+breadcrumb: breadcrumb "Home | Products | Shoes" @ 114.5,698.2 61x7.6
+breadcrumb_cap: text "Breadcrumb (breadcrumb)" @ 102,721 86x8
+pagination: pagination "‹ | 1 | 2 | 3 | ›" @ 206.5,697.5 61x8.9
+pagination_cap: text "Pagination (pagination)" @ 194,721 86x8
+stepper: stepper "Cart | Details | Payment | Done" @ 288.4,694.4 81.3x15.2
+stepper_cap: text "Stepper (stepper)" @ 286,721 86x8
+pills: pills "All | Open | Closed" @ 22.5,750 61x8.1
+pills_cap: text "Filter pills (pills)" @ 10,773 86x8
+list: list "First item | Second item | Third item" @ 119.6,742.5 50.8x22.9
+list_cap: text "List (list)" @ 102,773 86x8
+sidebar: sidebar "Dashboard | Reports | Settings" @ 216.7,738.8 40.6x30.5
+sidebar_cap: text "Sidebar menu (sidebar)" @ 194,773 86x8
+accordion: accordion "Section one | Section two | Section three" @ 298.5,740.6 61x26.7
+accordion_cap: text "Accordion (accordion)" @ 286,773 86x8
+image: image "" @ 32.7,790.8 40.6x30.5
+image_cap: text "Image (image)" @ 10,825 86x8
+video: video "Video title" @ 119.4,790 51.2x32
+video_cap: text "Video (video)" @ 102,825 86x8
+carousel: carousel "" @ 211.4,790 51.2x32
+carousel_cap: text "Carousel (carousel)" @ 194,825 86x8
+codeblock: codeblock "let n = sum(items)\nprint(n)" @ 298.5,793.3 61x25.4
+codeblock_cap: text "Code block (codeblock)" @ 286,825 86x8
+chatbubble: chatbubble "See you at 3pm!" @ 22.5,851.6 61x12.7
+chatbubble_cap: text "Chat bubble (chatbubble)" @ 10,877 86x8
+commentthread: commentthread "Ana: Can we make this bigger? | Ben: Done, have a look | Reply…" @ 112,844.6 66x26.7
+commentthread_cap: text "Comment thread (commentthread)" @ 102,877 86x8
+bell: bell "3" @ 230.7,851.6 12.7x12.7
+bell_cap: text "Notification bell (bell)" @ 194,877 86x8
+usermenu: usermenu "Ana Smith | Profile | Settings | Sign out" @ 309,842 40x32
+usermenu_cap: text "User menu (usermenu)" @ 286,877 86x8
+mapview: mapview "Search the map" @ 31.2,894 43.6x32
+mapview_cap: text "Map view (mapview)" @ 10,929 86x8
+satellite: satellite "Search the map" @ 123.2,894 43.6x32
+satellite_cap: text "Satellite view (satellite)" @ 102,929 86x8
+streetview: streetview "High Street" @ 213,894 48x32
+streetview_cap: text "Street view (streetview)" @ 194,929 86x8
+mappin: mappin "" @ 323.9,902.4 10.2x15.2
+mappin_cap: text "Map pin (mappin)" @ 286,929 86x8
+directions: directions "From: Leeds | To: York | Turn left onto the A64 | Turn right at the roundabout | Continue for 20 miles" @ 25.3,946 55.5x32
+directions_cap: text "Directions (directions)" @ 10,981 86x8
+captcha: captcha "I’m not a robot" @ 112,953.1 66x17.8
+captcha_cap: text "Robot check (captcha)" @ 102,981 86x8
+imagecaptcha: imagecaptcha "Select all squares with traffic lights" @ 223.8,946 26.5x32
+imagecaptcha_cap: text "Picture check (imagecaptcha)" @ 194,981 86x8
+textcaptcha: textcaptcha "x7Kp2" @ 301.1,946.8 55.9x30.5
+textcaptcha_cap: text "Text check (textcaptcha)" @ 286,981 86x8
+grid: grid "" @ 18.7,1002.5 68.6x22.9
+grid_cap: text "Grid table (grid)" @ 10,1033 86x8
+
+page "BI / dashboards" size 387x536 direction LR
+
+bar: bar "Bar chart" @ 31.6,10 42.7x32
+bar_cap: text "Bar chart (bar)" @ 10,45 86x8
+hbar: hbar "Bar chart" @ 123.7,10 42.7x32
+hbar_cap: text "Horizontal bars (hbar)" @ 102,45 86x8
+stackedbar: stackedbar "Stacked bars" @ 215.7,10 42.7x32
+stackedbar_cap: text "Stacked bars (stackedbar)" @ 194,45 86x8
+stackedhbar: stackedhbar "Stacked bars" @ 307.6,10 42.7x32
+stackedhbar_cap: text "Stacked h-bars (stackedhbar)" @ 286,45 86x8
+percentbar: percentbar "100% bars" @ 31.6,62 42.7x32
+percentbar_cap: text "100% bars (percentbar)" @ 10,97 86x8
+percenthbar: percenthbar "100% bars" @ 123.7,62 42.7x32
+percenthbar_cap: text "100% h-bars (percenthbar)" @ 102,97 86x8
+histogram: histogram "Histogram" @ 215.7,62 42.7x32
+histogram_cap: text "Histogram (histogram)" @ 194,97 86x8
+waterfall: waterfall "Waterfall" @ 307.6,62 42.7x32
+waterfall_cap: text "Waterfall (waterfall)" @ 286,97 86x8
+funnel: funnel "Funnel" @ 31.6,114 42.7x32
+funnel_cap: text "Funnel (funnel)" @ 10,149 86x8
+line: line "Line chart" @ 123.7,114 42.7x32
+line_cap: text "Line chart (line)" @ 102,149 86x8
+area: area "Area chart" @ 215.7,114 42.7x32
+area_cap: text "Area chart (area)" @ 194,149 86x8
+stackedarea: stackedarea "Stacked areas" @ 307.6,114 42.7x32
+stackedarea_cap: text "Stacked areas (stackedarea)" @ 286,149 86x8
+percentarea: percentarea "100% areas" @ 31.6,166 42.7x32
+percentarea_cap: text "100% areas (percentarea)" @ 10,201 86x8
+radar: radar "Radar chart" @ 123.7,166 42.7x32
+radar_cap: text "Radar chart (radar)" @ 102,201 86x8
+radararea: radararea "Radar chart" @ 215.7,166 42.7x32
+radararea_cap: text "Radar area (radararea)" @ 194,201 86x8
+polar: polar "Polar chart" @ 307.6,166 42.7x32
+polar_cap: text "Polar chart (polar)" @ 286,201 86x8
+spiral: spiral "Spiral chart" @ 31.6,218 42.7x32
+spiral_cap: text "Spiral chart (spiral)" @ 10,253 86x8
+pie: pie "Pie chart" @ 123.7,218 42.7x32
+pie_cap: text "Pie chart (pie)" @ 102,253 86x8
+donut: donut "Donut chart" @ 215.7,218 42.7x32
+donut_cap: text "Donut chart (donut)" @ 194,253 86x8
+scatter: scatter "Scatter chart" @ 307.6,218 42.7x32
+scatter_cap: text "Scatter chart (scatter)" @ 286,253 86x8
+bubble: bubble "Bubble chart" @ 31.6,270 42.7x32
+bubble_cap: text "Bubble chart (bubble)" @ 10,305 86x8
+candlestick: candlestick "Candlestick chart" @ 123.7,270 42.7x32
+candlestick_cap: text "Candlestick (candlestick)" @ 102,305 86x8
+boxplot: boxplot "Box plot" @ 215.7,270 42.7x32
+boxplot_cap: text "Box plot (boxplot)" @ 194,305 86x8
+heatmap: heatmap "Heatmap" @ 307.6,270 42.7x32
+heatmap_cap: text "Heatmap (heatmap)" @ 286,305 86x8
+gantt: gantt "Project plan" @ 27.4,322 51.2x32
+gantt_cap: text "Gantt chart (gantt)" @ 10,357 86x8
+treemap: treemap "Rent | Food | Travel | Fun | Other" @ 121,322 48x32
+treemap_cap: text "Treemap (treemap)" @ 102,357 86x8
+wordcloud: wordcloud "Fast | Simple | Friendly | Cheap | Secure | Reliable | Modern | Quiet" @ 207.3,322 59.4x32
+wordcloud_cap: text "Word cloud (wordcloud)" @ 194,357 86x8
+sankey: sankey "Visits | Signed up | Left | Paid | Free" @ 299,322 60x32
+sankey_cap: text "Sankey (sankey)" @ 286,357 86x8
+chord: chord "UK | France | Spain | Italy" @ 37,374 32x32
+chord_cap: text "Chord diagram (chord)" @ 10,409 86x8
+tilemap: tilemap "North | Midlands | East | Wales | South | London | West | Scotland | Ireland" @ 129,374 32x32
+tilemap_cap: text "Tile map (tilemap)" @ 102,409 86x8
+worldmap: worldmap "USA | Brazil | France | India | China | Australia" @ 200.4,374 73.1x32
+worldmap_cap: text "World map (worldmap)" @ 194,409 86x8
+countrymap: countrymap "East Midlands | East of England | London | North East | North West | Northern Ireland | Scotland | South East | South West | Wales | West Midlands | Yorkshire" @ 319.8,374 18.5x32
+countrymap_cap: text "Country map (countrymap)" @ 286,409 86x8
+routemap: routemap "East Yorkshire | North Yorkshire | South Yorkshire | West Yorkshire" @ 32.2,426 41.6x32
+routemap_cap: text "Route map (routemap)" @ 10,461 86x8
+sparkline: sparkline "Trend" @ 124.7,436.9 40.6x10.2
+sparkline_cap: text "Sparkline (sparkline)" @ 102,461 86x8
+bullet: bullet "Sales vs target" @ 211.6,436.9 50.8x10.2
+bullet_cap: text "Bullet chart (bullet)" @ 194,461 86x8
+dial: dial "72%" @ 311.2,431.9 35.6x20.3
+dial_cap: text "Gauge (dial)" @ 286,461 86x8
+kpi: kpi "£12.4k\nRevenue" @ 32.7,482.6 40.6x22.9
+kpi_cap: text "KPI card (kpi)" @ 10,513 86x8
+legend: legend "Series 1 | Series 2 | Series 3" @ 129.8,484.5 30.5x19
+legend_cap: text "Legend (legend)" @ 102,513 86x8
+legendrow: legendrow "Series 1 | Series 2 | Series 3" @ 195.1,490.2 83.8x7.6
+legendrow_cap: text "Legend row (legendrow)" @ 194,513 86x8
+
+page "Systems" size 387x276 direction LR
+
+server: server "" @ 45.4,13.3 15.2x25.4
+server_cap: text "Server (server)" @ 10,45 86x8
+cloud: cloud "" @ 124.7,13.3 40.6x25.4
+cloud_cap: text "Cloud (cloud)" @ 102,45 86x8
+user: user "" @ 229.4,15.8 15.2x20.3
+user_cap: text "User (user)" @ 194,45 86x8
+api: api "" @ 308.7,15.8 40.6x20.3
+api_cap: text "System / API (api)" @ 286,45 86x8
+c4person: c4person "Customer\n[Person]" @ 36,62 34.1x32
+c4person_cap: text "C4 person (c4person)" @ 10,97 86x8
+c4system: c4system "Shop\n[Software system]" @ 119.6,64 50.8x27.9
+c4system_cap: text "C4 system (c4system)" @ 102,97 86x8
+c4container: c4container "Web app\n[Container: React]" @ 211.6,64 50.8x27.9
+c4container_cap: text "C4 container (c4container)" @ 194,97 86x8
+c4component: c4component "Sign-in\n[Component]" @ 303.6,64 50.8x27.9
+c4component_cap: text "C4 component (c4component)" @ 286,97 86x8
+c4external: c4external "Payments\n[External system]" @ 27.6,116 50.8x27.9
+c4external_cap: text "C4 external (c4external)" @ 10,149 86x8
+firewall: firewall "Firewall" @ 136.1,122.4 17.8x15.2
+firewall_cap: text "Firewall (firewall)" @ 102,149 86x8
+router: router "Router" @ 229.4,122.4 15.2x15.2
+router_cap: text "Router (router)" @ 194,149 86x8
+loadbalancer: loadbalancer "Load balancer" @ 318.9,122.4 20.3x15.2
+loadbalancer_cap: text "Load balancer (loadbalancer)" @ 286,149 86x8
+queue: queue "Queue" @ 40.3,176.9 25.4x10.2
+queue_cap: text "Queue (queue)" @ 10,201 86x8
+cache: cache "Cache" @ 137.4,173.1 15.2x17.8
+cache_cap: text "Cache (cache)" @ 102,201 86x8
+bucket: bucket "Files" @ 229.4,173.8 15.2x16.5
+bucket_cap: text "Storage bucket (bucket)" @ 194,201 86x8
+phone: phone "Phone" @ 323.9,173.1 10.2x17.8
+phone_cap: text "Phone (phone)" @ 286,201 86x8
+service: service "Service" @ 44.1,226.4 17.8x15.2
+service_cap: text "Service (service)" @ 10,253 86x8
+script: script "script" @ 133.9,218 22.2x32
+script_cap: text "Script (script)" @ 102,253 86x8
+
+page "Containers" size 387x120 direction LR
+
+container: container "Container" @ 29,10 48x32
+container_cap: text "Container (container)" @ 10,45 86x8
+pool: pool "Pool" @ 106.6,10 76.8x32
+pool_cap: text "Swimlanes (pool)" @ 102,45 86x8
+lane: lane "Lane" @ 194,17.1 86x17.9
+lane_cap: text "Lane (lane)" @ 194,45 86x8
+c4boundary: c4boundary "Shop [Software system]" @ 303.4,10 51.2x32
+c4boundary_cap: text "C4 boundary (c4boundary)" @ 286,45 86x8
+scroll: scroll "Scroll area" @ 29,62 48x32
+scroll_cap: text "Scroll area (scroll)" @ 10,97 86x8
+
+page "Planning" size 387x172 direction LR
+
+centraltopic: centraltopic "Big idea" @ 30.1,17.1 45.7x17.8
+centraltopic_cap: text "Central topic (centraltopic)" @ 10,45 86x8
+topic: topic "Topic" @ 127.2,20.3 35.6x11.4
+topic_cap: text "Topic (topic)" @ 102,45 86x8
+sticky: sticky "Remember this" @ 218.7,10 36.6x32
+sticky_cap: text "Sticky note (sticky)" @ 194,45 86x8
+callout: callout "A note about this" @ 303.6,14.6 50.8x22.9
+callout_cap: text "Callout (callout)" @ 286,45 86x8
+milestone: milestone "Launch" @ 48.5,73.5 9.1x9.1
+milestone_cap: text "Milestone (milestone)" @ 10,97 86x8
+timeline: timeline "Q1 | Q2 | Q3 | Q4" @ 102,71.5 86x12.9
+timeline_cap: text "Timeline (timeline)" @ 102,97 86x8
+phases: phases "Discover | Design | Build | Launch" @ 194,73.1 86x9.8
+phases_cap: text "Phases (phases)" @ 194,97 86x8
+mood: mood "Happy" @ 316.3,68.5 25.4x19
+mood_cap: text "Mood (mood)" @ 286,97 86x8
+personcard: personcard "Ana Silva\nHead of design" @ 25.1,121.1 55.9x17.8
+personcard_cap: text "Person card (personcard)" @ 10,149 86x8
+
+page "UML" size 387x120 direction LR
+
+umlclass: umlclass "User | id: int\nname: text | login()\nlogout()" @ 33.8,10 38.4x32
+umlclass_cap: text "Class (umlclass)" @ 10,45 86x8
+state: state "Waiting" @ 127.2,18.4 35.6x15.2
+state_cap: text "State (state)" @ 102,45 86x8
+initial: initial "" @ 233.2,22.2 7.6x7.6
+initial_cap: text "Initial state (initial)" @ 194,45 86x8
+final: final "" @ 324.7,21.7 8.6x8.6
+final_cap: text "Final state (final)" @ 286,45 86x8
+lifeline: lifeline "Server" @ 46.6,62 12.8x32
+lifeline_cap: text "Lifeline (lifeline)" @ 10,97 86x8
+activation: activation "" @ 142.9,65.3 4.1x25.4
+activation_cap: text "Activation (activation)" @ 102,97 86x8
+
+page "BPMN" size 387x224 direction LR
+
+startevent: startevent "" @ 47.3,20.3 11.4x11.4
+startevent_cap: text "Start event (startevent)" @ 10,45 86x8
+endevent: endevent "" @ 139.3,20.3 11.4x11.4
+endevent_cap: text "End event (endevent)" @ 102,45 86x8
+timerevent: timerevent "" @ 231.3,20.3 11.4x11.4
+timerevent_cap: text "Timer event (timerevent)" @ 194,45 86x8
+messageevent: messageevent "" @ 323.3,20.3 11.4x11.4
+messageevent_cap: text "Message event (messageevent)" @ 286,45 86x8
+intermediateevent: intermediateevent "" @ 47.3,72.3 11.4x11.4
+intermediateevent_cap: text "Intermediate event (intermediateevent)" @ 10,97 86x8
+gateway: gateway "" @ 137.4,70.4 15.2x15.2
+gateway_cap: text "Gateway (gateway)" @ 102,97 86x8
+parallelgateway: parallelgateway "" @ 229.4,70.4 15.2x15.2
+parallelgateway_cap: text "Parallel gateway (parallelgateway)" @ 194,97 86x8
+inclusivegateway: inclusivegateway "" @ 321.4,70.4 15.2x15.2
+inclusivegateway_cap: text "Inclusive gateway (inclusivegateway)" @ 286,97 86x8
+eventgateway: eventgateway "" @ 45.4,122.4 15.2x15.2
+eventgateway_cap: text "Event gateway (eventgateway)" @ 10,149 86x8
+task: task "Task" @ 126,119.8 38.1x20.3
+task_cap: text "Task (task)" @ 102,149 86x8
+usertask: usertask "Review order" @ 217.9,119.8 38.1x20.3
+usertask_cap: text "User task (usertask)" @ 194,149 86x8
+servicetask: servicetask "Send email" @ 309.9,119.8 38.1x20.3
+servicetask_cap: text "Service task (servicetask)" @ 286,149 86x8
+bpmnsubprocess: bpmnsubprocess "Handle refund" @ 34,171.8 38.1x20.3
+bpmnsubprocess_cap: text "Subprocess (bpmnsubprocess)" @ 10,201 86x8
+dataobject: dataobject "" @ 139.3,174.4 11.4x15.2
+dataobject_cap: text "Data object (dataobject)" @ 102,201 86x8

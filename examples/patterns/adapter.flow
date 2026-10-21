@@ -1,0 +1,31 @@
+flow 1
+
+# Adapter: convert the interface of an existing class into one that a client expects, without changing that class.
+
+page "When to use" size 217x181
+
+start: terminator "Integrating an existing class"
+mismatch: decision "Does an existing class's interface not match what the client expects?"
+cannot_change: decision "Is changing that existing class not possible or not wanted (third-party, shared, legacy)?"
+direct: terminator "Use the class as it is" [fill=#DCE3EB]
+modify: terminator "Modify the class's interface directly" [fill=#DCE3EB]
+use: terminator "Use Adapter" [fill=#C8E6C9]
+
+start -> mismatch
+mismatch -> cannot_change : "yes"
+mismatch -> direct : "no"
+cannot_change -> use : "yes"
+cannot_change -> modify : "no"
+
+page "Structure" size 273x130 direction LR
+
+target: umlclass "«interface»\nTarget | | +request()"
+adapter: umlclass "Adapter | -adaptee: Adaptee | +request()"
+adaptee: umlclass "Adaptee | | +specificRequest()"
+client: umlclass "Client"
+
+adapter --|> target
+adapter *-- adaptee : "wraps"
+client ..> target : "uses"
+
+key "Key"

@@ -1,0 +1,181 @@
+flow 1
+
+# ---------------------------------------------------------------------------
+# Page 0: what codemap is, in a few cards
+# ---------------------------------------------------------------------------
+page "0. Summary"
+
+summary: container "Codemap: a DesignRoutes map of any repo, for LLMs" [flow=column gap=4]
+pitch: process "One .codemap.flow per repo:\na diagram people open in DesignRoutes,\nand the map Claude reads before searching" 190x24 [fill=#DCE3EB size=13 in=summary]
+points: container [flow=row gap=4 in=summary]
+p1: sticky "Any repo\n\nThe tool lives in DesignRoutes\nand reuses its real .flow parser" 60x34 [in=points]
+p2: sticky "One file, two readers\n\nPeople see a diagram;\nClaude reads the same text" 60x34 [in=points]
+p3: sticky "Derived + hand-written\n\nScans rewrite the facts;\nnotes people add are kept by path" 60x34 [in=points]
+status: callout "Status: design only. Nothing is built yet.\nThe graphify import/export plan is paused behind this (page 6)." 190x18 [in=summary]
+
+# ---------------------------------------------------------------------------
+# Page 1: the whole idea in one picture
+# ---------------------------------------------------------------------------
+page "1. How it works" direction LR
+
+repo: database "Any repo\n(TS, Python, C#, PowerShell...)"
+
+tool: container "codemap tool (lives in DesignRoutes)" [flow=column gap=6]
+scan: process "Scan\ntree-sitter per language,\nregex fallback per file" [in=tool]
+derive: document "Derived facts\npath, lang, exports@line,\nimports, tests" [in=tool]
+merge: preparation "Merge\nkeyed by path;\nmoved/deleted files flag\ntheir notes as orphaned" [in=tool]
+
+notes: document "Hand-written notes\nroutes, hidden wiring,\ngotchas, vocabulary"
+seed: cloud "graphify graph.json\n(optional seed)"
+llm: service "One-off LLM pass\nfills empty purposes\n(paid once, then kept)"
+
+map: script "<repo>/.codemap.flow\nno coordinates:\npure meaning" [lang=sh]
+
+claude: user "Claude\nreads overview page,\nthen one area page"
+editor: browser "DesignRoutes editor\nsee it, drag it,\nedit the notes"
+check: decision "--check\nmap stale?"
+fail: terminator "Hook / CI fails:\nregenerate"
+
+repo -> scan
+scan -data-> derive
+derive -data-> merge
+notes -data-> merge
+seed -alt-> merge : "only if it exists"
+llm -alt-> notes : "gaps only"
+merge -> map
+map -data-> claude
+map <-> editor : "notes edited here\nflow back into the file"
+map -> check
+check -alt-> fail : "yes"
+
+key "Key"
+
+# ---------------------------------------------------------------------------
+# Page 2: the proposed new shape. "module" doesn't exist yet, so it's mocked
+# with umlclass: name | derived part | hand-written part.
+# ---------------------------------------------------------------------------
+page "2. The module shape" direction LR
+
+card: umlclass "rename.ts  [ts] | path: src/engine/rename.ts\nexports: selectedShapeId@L13, renameShape@L21\nimports: core, document, selection, flow/language\ntested by: tests/e2e/rename.spec.js | routes: rename a shape; fix dangling ids\nnotes: text-rename.ts does the text-pane side;\nchange both together" @ 130,14.4 85x85.6
+
+d: callout "Middle part: DERIVED.\nRewritten on every run.\nNever edit by hand." @ 20,18.1
+h: callout "Bottom part: HAND-WRITTEN.\nKept across runs, keyed by path.\nThis is what LLMs can't work out." @ 15,65.6
+
+d .. card
+h .. card
+
+proposed: codeblock "What it might look like as real .flow text:\n\nrename: module \"rename.ts\" [lang=ts in=engine] {\n  path: src/engine/rename.ts;\n  exports: selectedShapeId@13, renameShape@21;\n  routes: rename a shape, fix dangling ids;\n  notes: keep in step with text-rename.ts\n}"
+
+# ---------------------------------------------------------------------------
+# Page 3: a small slice of THIS repo mapped that way. Real files, real links.
+# ---------------------------------------------------------------------------
+page "3. Example: DesignRoutes" direction LR
+
+comps: container "src/components"
+eng: container "src/engine"
+fmts: container "src/engine/formats" [in=eng]
+lang: container "src/engine/flow" [in=eng]
+
+importdlg: script "ImportDialog.tsx\nimport dialog markup" [lang=tsx in=comps]
+coderename: script "CodeRename.tsx\nrename box in the text pane" [lang=tsx in=comps]
+
+main: script "main.ts\nruns every init(), in order" [lang=ts in=eng]
+dialogs: script "dialogs.ts\nimport/export dialog logic" [lang=ts in=eng]
+rename: script "rename.ts\nrename a shape id" [lang=ts in=eng]
+textrename: script "text-rename.ts\nrename from the text pane" [lang=ts in=eng]
+imp: script "import.ts\nMermaid, PlantUML, DOT, draw.io" [lang=ts in=fmts]
+exp: script "export.ts\npage -> other formats" [lang=ts in=fmts]
+language: script "language.ts\nparseFlow, *Stmt writers" [lang=ts in=lang]
+
+coderename ..> rename
+coderename ..> textrename
+rename ..> language
+textrename ..> language
+dialogs ..> imp
+dialogs ..> exp
+
+# The links an import graph can't see. These are the ones worth a map.
+dialogs -- importdlg [style=dashed end=arrow stroke=#B23A48 weight=1.5 means="Hidden wiring (no import)"] : "drives it by DOM id\n$('importFmt')"
+main -- imp [style=dashed end=arrow stroke=#B23A48 weight=1.5 means="Hidden wiring (no import)"] : "init() order\nmatters"
+main -- exp [style=dashed end=arrow stroke=#B23A48 weight=1.5 means="Hidden wiring (no import)"] : "init() order\nmatters"
+main -- dialogs [style=dashed end=arrow stroke=#B23A48 weight=1.5 means="Hidden wiring (no import)"]
+
+gotcha: sticky "Gotcha (hand-written):\nchanging shapes in language.ts?\nrun build-flow-skill.mjs after"
+gotcha .. language
+
+key "Key"
+
+# ---------------------------------------------------------------------------
+# Page 4: what we need to decide. Green = what I'd pick.
+# ---------------------------------------------------------------------------
+page "4. Decisions" direction LR
+
+q1: decision "Shape?"
+q1a: process "New 'module' shape\nclean home for key/value data" [fill=#D5ECD4]
+q1b: process "Extend 'script'\nless language work"
+q1 -> q1a : "lean"
+q1 -> q1b
+
+q2: decision "{ } grammar?"
+q2a: process "Key/value just\nfor module" [fill=#D5ECD4]
+q2b: process "General key/value\nfor any shape"
+q2 -> q2a : "start here"
+q2 -> q2b : "later, if useful"
+
+q3: decision "Nodes are?"
+q3a: process "Files, symbols\nlisted inside" [fill=#D5ECD4]
+q3b: process "Files, plus key\nfunctions promoted\nto their own nodes"
+q3 -> q3a
+q3 -> q3b : "opt-in"
+
+q4: decision "Notes live?"
+q4a: process "Inline in .codemap.flow\none file is the truth" [fill=#D5ECD4]
+q4b: process "Sidecar file\nmerged in each run"
+q4 -> q4a
+q4 -> q4b
+
+q5: decision "LLM reads?"
+q5a: process "The .flow itself\n(position-free)" [fill=#D5ECD4]
+q5b: process "A separate compact\ntext index too"
+q5 -> q5a
+q5 -> q5b : "if .flow proves noisy"
+
+# ---------------------------------------------------------------------------
+# Page 5: every field the map holds, and where it comes from
+# ---------------------------------------------------------------------------
+page "5. What the map holds"
+
+fields: grid { Field, Kind, Source, "Example (DesignRoutes)"; "path, language", Derived, File system, "src/engine/rename.ts, ts"; exports with line, Derived, Parser, renameShape@21; imports / imported by, Derived, Parser, "core, document, ..."; tested by, Derived, Test files, tests/e2e/rename.spec.js; purpose, Derived or hand-written, Header comment or LLM, Renames a shape id everywhere; routes, Hand-written, People, language edits: language.ts; hidden wiring, Hand-written, People, dialogs.ts drives dialog by id; gotchas, Hand-written, People, rebuild skill after shapes; don't touch, Hand-written, People, dist html is generated; vocabulary, Hand-written, People, connector = edge = connection } @ 15,15 260x110
+
+rule: sticky "Merge rule: hand-written fields are keyed by path. A moved or deleted file's notes stay, flagged as orphaned, until someone re-attaches or deletes them. Nothing hand-written is dropped silently." @ 15,135 125x35
+why: sticky "Why hidden wiring matters most: main.ts runs every init() in an order some modules rely on. No import records it, so neither grep nor graphify finds it." @ 150,135 125x35
+
+# ---------------------------------------------------------------------------
+# Page 6: why not just graphify, and what happens to the graphify plan
+# ---------------------------------------------------------------------------
+page "6. graphify vs codemap"
+
+compare: grid { Need, "graphify graph.json", Codemap; Size in a prompt, "Bulky: about 0.75 KB per node", "Compact: file level, no coordinates"; Granularity, Functions and symbols, "Files, key exports listed inside"; Grouping, "Communities, can regroup each run", "Folders, stable"; Hand edits, Lost on every rebuild, "Kept, keyed by path"; "Hidden wiring (DOM ids, init order)", Not seen, Its own connector type; Vocabulary mismatches, "Cause \"no matching nodes\" misses", A vocabulary note per area; Viewable and editable, "Generated HTML, read-only", "Open in DesignRoutes, drag, edit" } @ 15,15 260x75
+
+gplan: sticky "graphify stays as a side door: a seed for a first map, not a step anyone has to run.\n\nparseGraphify importer: communities become containers, with a picker in the Import dialog.\nConfidence becomes line style: EXTRACTED solid, INFERRED dashed, AMBIGUOUS dotted.\nA lossy toGraphify export. Both need a parent field on ImportNode and GraphNode, which the module shape reuses." @ 15,100 260x40
+
+# ---------------------------------------------------------------------------
+# Page 7: how Claude uses it, and the order to build it in
+# ---------------------------------------------------------------------------
+page "7. Using and building it" direction TB
+
+use: container "How Claude uses it" [flow=column gap=3]
+u1: process "1. CLAUDE.md says: read .codemap.flow before searching" [in=use]
+u2: process "2. A codemap skill matches the question against labels, routes, notes, vocabulary" [in=use]
+u3: process "3. Claude opens the files named and verifies them: the map routes, it doesn't prove" [in=use]
+u4: process "4. New hidden wiring or gotchas found in a task are proposed as notes, never added silently" [in=use]
+fresh: callout "codemap --check fails when the derived half is stale or notes are orphaned. Run it from a git hook or CI." [in=use]
+
+build: container "Build order" [flow=column gap=3]
+b1: process "1. Decide the five questions (page 4)" [in=build]
+b2: process "2. module shape + key/value { } grammar; regenerate the skill" [in=build]
+b3: process "3. parent plumbing on the import/export graph types" [in=build]
+b4: process "4. TS/JS scanner; run on DesignRoutes; write the page 3 notes by hand" [in=build]
+b5: process "5. Merge, orphan flagging, --check" [in=build]
+b6: process "6. codemap skill + CLAUDE.md pointer; try a second repo" [in=build]
+b7: process "7. Python, C#, PowerShell; then graphify import as a seed; then export" [in=build]

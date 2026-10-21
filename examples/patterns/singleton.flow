@@ -1,0 +1,25 @@
+flow 1
+
+# Singleton: ensure a class has exactly one instance, with a single global access point to it.
+
+page "When to use" size 210x181
+
+start: terminator "Designing a class"
+one: decision "Must there be exactly one instance for the whole application's lifetime?"
+access: decision "Do callers need a single well-known point to reach it (not just one instance by convention)?"
+normal: terminator "Use a normal class" [fill=#DCE3EB]
+di: terminator "Use a DI container with a \"singleton\" lifetime scope instead" [fill=#DCE3EB]
+use: terminator "Use Singleton" [fill=#C8E6C9]
+
+start -> one
+one -> access : "yes"
+one -> normal : "no"
+access -> use : "yes"
+access -> di : "no"
+
+page "Structure" size 164x68 direction LR
+
+singleton: umlclass "Singleton | -instance: Singleton\n-Singleton() | +getInstance(): Singleton"
+client: umlclass "Client"
+
+client ..> singleton : "Singleton.getInstance()"

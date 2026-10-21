@@ -1,0 +1,23 @@
+flow 1
+page "Orders" size 304x163 direction LR
+
+# A small example of the .flow language, used in docs/flow-language.md.
+# Comments start with # at the start of a line or after a space.
+
+start: terminator "Order placed" @ 15,20
+check: decision "In stock?" @ 75,15 40x24
+pick: process "Pick and pack" @ 145,20 [fill=#DCE3EB]
+wait: process "Back-order" @ 145,60
+ship: terminator "Shipped" @ 215,20
+sales: bar "Orders per day" { 3, 5, 2, 7 } @ 15,60 50x34
+orders: table "orders" { id; customer_id; placed_at } @ 75,60 40x30
+customers: table "customers" { id; name; email } @ 15,105 40x30
+
+start -> check
+check -> pick : "yes"
+check -alt-> wait [weight=1.5] : "no"
+wait ..> pick : "when it arrives"
+pick -> ship
+customers ||--o{ orders
+
+key "Key" @ 145,95

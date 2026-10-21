@@ -1,0 +1,100 @@
+flow 1
+
+# ---------------------------------------------------------------------------
+# Page 0: what align and distribute are, in a few cards
+# ---------------------------------------------------------------------------
+page "0. Summary"
+
+summary: container "Align and distribute: line shapes up without nudging" [flow=column gap=4]
+pitch: process "Select two or more shapes, then line up their edges or centres,\nspace them out evenly, or make them the same size.\nEach is one undo step and changes only the @ and WxH of the shapes that moved." 190x24 [fill=#DCE3EB size=13 in=summary]
+points: container [flow=row gap=4 in=summary]
+p1: sticky "Nothing new in the text\n\nIt's a canvas edit:\nthe text gets new\n@ x,y like a drag" 60x38 [in=points]
+p2: sticky "Every one has a key\n\nAlt+Shift + a letter,\nlisted in Properties\n(principle 5)" 60x38 [in=points]
+p3: sticky "Leaves layouts alone\n\nShapes placed by a flexi\ncontainer, a mind map or\na sequence are skipped" 60x38 [in=points]
+status: callout "Status: design only. Nothing is built yet.\nselection.ts already has moveMany, which this builds on." 190x18 [in=summary]
+
+# ---------------------------------------------------------------------------
+# Page 1: the commands
+# ---------------------------------------------------------------------------
+page "1. Commands"
+
+cmds: grid { Command, Key, What it does; Align left, Alt+Shift+L, left edges to the anchor's left edge; Align centre, Alt+Shift+C, centres on the anchor's vertical centre line; Align right, Alt+Shift+R, right edges to the anchor's right edge; Align top, Alt+Shift+T, top edges to the anchor's top; Align middle, Alt+Shift+M, centres on the anchor's horizontal centre line; Align bottom, Alt+Shift+B, bottom edges to the anchor's bottom; Distribute across, Alt+Shift+H, "equal gaps left to right, ends stay put"; Distribute down, Alt+Shift+V, "equal gaps top to bottom, ends stay put"; Same width, Alt+Shift+W, the anchor's width; Same height, Alt+Shift+E, the anchor's height } @ 15,15 230x80
+
+anchor: callout "The anchor is the first shape selected (as in Visio): it never moves.\nIt's drawn with a thicker selection outline so you can see which it is." @ 15,102 150x14
+dist: callout "Distribute needs three or more shapes. It sorts them by position,\nkeeps the first and last where they are and spaces the rest between." @ 15,120 150x14
+
+# ---------------------------------------------------------------------------
+# Page 2: where they live, as a wireframe
+# ---------------------------------------------------------------------------
+page "2. In the editor" size 297x150
+
+win: appwindow "DesignRoutes" @ 10,10 277x130
+canvas: container "Page" @ 14,22 180x114 [bgfill=#FAFAFA]
+ghost1: process @ 80,40 34x14 [stroke=#9AA3AB in=canvas]
+ghost2: process @ 140,40 30x14 [stroke=#9AA3AB in=canvas]
+a: process "Check stock" @ 30,40 34x14 [weight=2.5 in=canvas]
+b: process "Pick and pack" @ 80,46 34x14 [in=canvas]
+c: process "Ship" @ 140,38 30x14 [in=canvas]
+props: text "3 shapes selected" @ 200,24 83x10 [size=12]
+row1: segmented "⇤ | ⇹ | ⇥ | ⤒ | ⇕ | ⤓" @ 203,40 77x10
+row2: segmented "↔ even | ↕ even | = W | = H" @ 203,54 77x10
+keys: list "Align left  Alt+Shift+L | Align top  Alt+Shift+T | Distribute  Alt+Shift+H | ..." @ 203,68 77x34
+menu: contextmenu "Align top | Align middle | Distribute across | Same size" @ 75,72 50x34
+
+n1: callout "Thick outline: the anchor" @ 20,100 45x9
+n2: callout "Grey: where they'll go\nwhile the button is hovered" @ 132,100 55x14
+n3: callout "Right-click on a multi-selection\noffers them too" @ 130,120 60x14
+n1 .. a
+n2 .. ghost2
+
+# ---------------------------------------------------------------------------
+# Page 3: the rules
+# ---------------------------------------------------------------------------
+page "3. Rules"
+
+rules: container "Rules" [flow=row gap=6]
+
+which: container "Which shapes move" [flow=column gap=3 in=rules]
+w1: sticky "Only top-level selected\nshapes (topLevelIds);\na container's members\nmove with it" 60x24 [in=which]
+w2: sticky "Skipped: members of a flexi\ncontainer, mind-map topics,\nlifelines joined to a sequence.\nA toast says how many" 60x26 [in=which]
+w3: sticky "Connections and keys never\ncount; selected ones are\nignored, not an error" 60x22 [in=which]
+w4: sticky "A shape with no @ gets one,\nas a drag would give it" 60x18 [in=which]
+
+text: container "The text" [flow=column gap=3 in=rules]
+t1: sticky "One commit() = one undo\nstep for the whole command" 60x20 [in=text]
+t2: sticky "Only @ and WxH change,\nonly on lines that moved\n(text writes back only\nthe lines it changed)" 60x24 [in=text]
+t3: sticky "Positions are rounded to\n0.1 mm, like a drag" 60x18 [in=text]
+
+edge: container "Edge cases" [flow=column gap=3 in=rules]
+e1: sticky "Shapes in different containers:\nallowed; each stays in its\ncontainer, even if it now\nsticks out of it" 60x24 [in=edge]
+e2: sticky "One shape selected:\nalign buttons are greyed\n(nothing to align to)" 60x22 [in=edge]
+e3: sticky "Rotated shapes don't\nexist yet, so bounds\nare just @ and WxH" 60x22 [in=edge]
+
+# ---------------------------------------------------------------------------
+# Page 4: what's in v1 and what waits
+# ---------------------------------------------------------------------------
+page "4. v1 and later"
+
+phases: container "Scope" [flow=row gap=6]
+
+v1: container "v1" [flow=column gap=3 in=phases]
+v1a: process "Six aligns, two distributes,\nsame width / height" 70x16 [fill=#DCE3EB in=v1]
+v1b: process "Anchor = first selected" 70x14 [fill=#DCE3EB in=v1]
+v1c: process "Properties row, right-click\nmenu, Alt+Shift keys" 70x16 [fill=#DCE3EB in=v1]
+v1d: process "Hover preview of where\nshapes will go" 70x16 [fill=#DCE3EB in=v1]
+
+later: container "Later, only if needed" [flow=column gap=3 in=phases]
+la: process "Smart guides while dragging:\nsnap to other shapes' edges\nand centres, show equal gaps" 70x18 [in=later]
+lb: process "Align to the page or to\nthe selection's bounds\ninstead of the anchor" 70x18 [in=later]
+lc: process "Tidy into a grid: rows and\ncolumns with equal gaps" 70x16 [in=later]
+ld: process "Match style: copy fill,\nstroke and text size from\nthe anchor" 70x18 [in=later]
+
+# ---------------------------------------------------------------------------
+# Page 5: open questions
+# ---------------------------------------------------------------------------
+page "5. Open questions"
+
+q: container "Open questions" [flow=column gap=4]
+q1: sticky "Anchor: first selected (Visio) or last selected\n(PowerPoint)? Marquee selection has no order: use\nthe top-left shape then?" 120x20 [in=q]
+q2: sticky "Should aligning shapes in a plain container that\nwould push one outside grow the container instead?" 120x18 [in=q]
+q3: sticky "Alt+Shift letters are free in hot-keys.ts today; check\nthey don't clash with the desktop app or WebView2." 120x18 [in=q]

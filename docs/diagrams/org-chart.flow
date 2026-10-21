@@ -1,0 +1,17 @@
+flow 1
+
+# Person cards and plain connections, for the README: nothing is placed by hand, so the automatic layout
+# (top to bottom) arranges them as a tree.
+
+page "Org" size 220x117
+ceo: personcard "Ana Silva\nChief executive"
+cto: personcard "Ben Okafor\nTechnology"
+cfo: personcard "Cara Lee\nFinance"
+dev1: personcard "Dan Wu\nEngineer"
+dev2: personcard "Eve Shah\nEngineer"
+acc: personcard "Fay Ruiz\nAccountant"
+ceo -> cto
+ceo -> cfo
+cto -> dev1
+cto -> dev2
+cfo -> acc

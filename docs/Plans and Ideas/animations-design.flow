@@ -1,0 +1,137 @@
+flow 1
+
+# ---------------------------------------------------------------------------
+# Page 0: what animations are, in a few cards
+# ---------------------------------------------------------------------------
+page "0. Summary"
+
+summary: container "Animations: present a flow one click at a time" [flow=column gap=4]
+pitch: process "An @animation block in the .flow file lists steps.\nEach step restates shapes with $id, in normal shape syntax.\nPresent mode plays them like PowerPoint: next, back." 190x24 [fill=#DCE3EB size=13 in=summary]
+points: container [flow=row gap=4 in=summary]
+p1: sticky "Nothing new to learn\n\nA step line is a shape line:\nwhatever you can write,\nyou can animate" 60x38 [in=points]
+p2: sticky "Only what changes\n\nLeave parts out and\nthey carry over from\nthe step before" 60x38 [in=points]
+p3: sticky "Presenting only\n\nEvery export strips the\nblock and shows the\nbase diagram" 60x38 [in=points]
+status: callout "Status: v1 is built (page 4): flow/animation.ts and present.ts.\nThe later items on page 4 wait until they're needed." 190x18 [in=summary]
+
+# ---------------------------------------------------------------------------
+# Page 1: how a step is worked out and played
+# ---------------------------------------------------------------------------
+page "1. How it plays" direction LR
+
+file: script "drawing.flow\nshapes, then\n@animation block" [lang=sh]
+parse: process "parseFlow\nreads the block into\nchanges per step"
+base: document "Base diagram\n(what edit mode\nand exports show)"
+steps: document "Steps\n1, 3, 4...\ngaps skipped"
+apply: preparation "Step n =\nbase + steps 1..n\napplied in order"
+present: browser "Present mode\nfull screen\n→ / space / click: next\n←: back · Esc: exit"
+tween: process "Tween\nposition and colour slide;\na type change crossfades"
+export: terminator "PNG / PDF / Visio...\nblock stripped"
+
+file -> parse
+parse -data-> base
+parse -data-> steps
+base -data-> apply
+steps -data-> apply
+apply -> tween
+tween -> present
+present -alt-> apply : "next / back:\nrecompute, no undo"
+base -> export
+
+key "Key"
+
+# ---------------------------------------------------------------------------
+# Page 2: the syntax
+# ---------------------------------------------------------------------------
+page "2. Syntax" direction LR
+
+example: codeblock "terminator1: terminator @ 152.5,69.8 [fill=#DE2121]\nterminator2: terminator @ 152.5,69.8 [fill=#DE2121]\nterminator3: terminator @ 152.5,69.8 [fill=#DE2121]\n\n@animation start\nstep 1\n   $terminator1 @ 152.5,67.8 [fill=#DE0000]\n   $terminator2 @ 152.5,66.8 [fill=#DE0100]\n   $terminator3 @ 152.5,67.8 [fill=#DE0000]\nstep 3\n   $terminator1 @ 152.5,67.8\n   $terminator2 process [fill=#DE0000]\nstep 4\n   $terminator3 @ 152.5,40\n   +retry: process \"Retry\" @ 200,60\n   -$terminator1\nstep 5\n   $retry [fill=#C8E6C9]\n   +$terminator1\n@animation end" @ 15,15 120x110
+
+n1: callout "$id = a shape that already exists.\nEverything after it is optional:\ntype, @ x,y, WxH, [settings]." @ 150,15 80x20
+n2: callout "Step 3, terminator1: no fill written,\nso it stays #DE0000 from step 1." @ 150,45 80x18
+n3: callout "Step 3, terminator2 becomes a process.\nThe line must be valid for a process." @ 150,70 80x18
+n4: callout "No step 2: gaps are skipped,\nso this is three clicks: 1, 3, 4." @ 150,95 80x18
+
+n5: callout "+retry: a new shape that only lives in the animation.\n-$terminator1 hides it; +$terminator1 brings it back\nwith the last values it had." @ 150,120 80x22
+
+n1 .. example
+n5 .. example
+n2 .. example
+n3 .. example
+n4 .. example
+
+# ---------------------------------------------------------------------------
+# Page 3: the rules
+# ---------------------------------------------------------------------------
+page "3. Rules"
+
+rules: container "Rules" [flow=row gap=6]
+
+line: container "A step line" [flow=column gap=3 in=rules]
+l1: sticky "$id [type] [label] [@ x,y] [WxH] [settings]\nonly the id is required" 60x22 [in=line]
+l2: sticky "Left out = carried over\nfrom the step before\n(or the base diagram)" 60x22 [in=line]
+l3: sticky "Changes stick until\na later step changes them" 60x22 [in=line]
+l4: sticky "Restating the current type\nis fine and changes nothing" 60x22 [in=line]
+
+typechg: container "Changing type" [flow=column gap=3 in=rules]
+t1: sticky "Allowed, as long as the result\nis valid as if declared new\nwith that type" 60x22 [in=typechg]
+t2: sticky "Written on the step line and\ninvalid for the new type:\nERROR" 60x22 [fill=#F4C7C3 in=typechg]
+t3: sticky "Carried over and invalid\nfor the new type (side=right\non a message → square):\ndropped + INFO note" 60x26 [in=typechg]
+t4: sticky "Shown as a crossfade;\nposition and colour\nstill tween" 60x22 [in=typechg]
+
+addhide: container "Adding and hiding" [flow=column gap=3 in=rules]
+a1: sticky "+id: type ... creates a shape\nthat only lives in the animation.\nFull declaration; id must be new" 60x22 [in=addhide]
+a2: sticky "-$id hides any shape\n(base or added); its\nconnections hide with it" 60x22 [in=addhide]
+a3: sticky "+$id shows it again with\nthe last values it had" 60x22 [in=addhide]
+a4: sticky "+ fades in, - fades out;\nBack reverses both" 60x22 [in=addhide]
+
+stepsr: container "Steps" [flow=column gap=3 in=rules]
+s1: sticky "step N: numbers are an order,\ngaps are skipped" 60x22 [in=stepsr]
+s2: sticky "Same shape twice in one step:\nlast line wins + warning" 60x22 [in=stepsr]
+s3: sticky "Back = recompute base +\nsteps up to the one before.\nJump to any step." 60x22 [in=stepsr]
+s5: sticky "Leaving present mode = the exact\nbase diagram. Nothing added,\nhidden or changed remains." 60x22 [fill=#DCE3EB in=stepsr]
+s4: sticky "The file is never rewritten\nto suit us. People lay it out\nhowever they like." 60x22 [in=stepsr]
+
+# ---------------------------------------------------------------------------
+# Page 4: what's in v1 and what waits
+# ---------------------------------------------------------------------------
+page "4. v1 and later"
+
+phases: container "Scope" [flow=row gap=6]
+
+v1: container "v1" [flow=column gap=3 in=phases]
+v1a: process "One @animation block,\nthe last thing in the file" 70x16 [fill=#DCE3EB in=v1]
+v1b: process "$id step lines,\npartial restatement" 70x16 [fill=#DCE3EB in=v1]
+v1c: process "Type changes with\nerror / drop rules" 70x16 [fill=#DCE3EB in=v1]
+v1g: process "+id to add, -$id to hide,\n+$id to show again" 70x16 [fill=#DCE3EB in=v1]
+v1d: process "Present mode: next, back,\ntweens and crossfades" 70x16 [fill=#DCE3EB in=v1]
+v1e: process "Every export strips the block" 70x16 [fill=#DCE3EB in=v1]
+v1f: process "Writer puts the block back\nlast, so canvas edits\nleave it as written" 70x18 [fill=#DCE3EB in=v1]
+
+later: container "Later, only if needed" [flow=column gap=3 in=phases]
+la: process "Blocks anywhere in the file,\npieced together at run time" 70x16 [in=later]
+lb: process "Each block only sees shapes\ndeclared above it\n(below = error)" 70x18 [in=later]
+lc: process "Tidy: merge every block into\none at the bottom, only\nwhen someone asks" 70x18 [in=later]
+le: process "Animation-only connections:\n+pay -> retry : \"fails\"" 70x16 [in=later]
+ld: process "Multiple pages: one deck per\nfile or per page? (v1: any\nshape in the file)" 70x18 [in=later]
+
+checks: container "Checker messages (v1)" [flow=column gap=3 in=phases]
+c1: inlineerror "Error: no shape \"x\" for $x" 70x12 [in=checks]
+c2: inlineerror "Error: anything after @animation end" 70x12 [in=checks]
+c3: inlineerror "Error: $ line outside a block" 70x12 [in=checks]
+c4: inlineerror "Error: setting not valid for new type" 70x12 [in=checks]
+c7: inlineerror "Error: +id already a shape" 70x12 [in=checks]
+c8: inlineerror "Error: $x or -$x while x is hidden" 70x12 [in=checks]
+c9: inlineerror "Error: +$x when x isn't hidden" 70x12 [in=checks]
+c10: inlineerror "Error: base connection to an\nanimation-only shape (not a stray process)" 70x14 [in=checks]
+c5: alert "Warning: shape twice in one step" 70x12 [in=checks]
+c6: alert "Info: carried-over setting dropped" 70x12 [in=checks]
+
+# ---------------------------------------------------------------------------
+# Page 5: open questions
+# ---------------------------------------------------------------------------
+page "5. Open questions"
+
+q: container "Open questions" [flow=column gap=4]
+q2: sticky "Multiple pages: can a step change shapes\non any page, or one deck per page?" 120x18 [in=q]
+q3: sticky "Edges while a shape moves: re-route every\nframe, or fade out and back (cheap v1)?" 120x18 [in=q]
+q4: sticky "Where it hooks in: parseFlow reads the block;\nshape writers output it last; exports skip it." 120x18 [in=q]

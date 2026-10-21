@@ -1,0 +1,29 @@
+flow 1
+
+# A generic example: how a typical Node.js build script runs. Shows a loop, a decision
+# and a couple of branches in the .flow format. Nothing here is specific to any
+# particular project -- it is just a stand-in CI/build process to show the shapes off.
+
+page "Build pipeline" size 443x82 direction LR
+
+start: terminator "npm run build" @ 10,8.8
+install: process "Install dependencies" @ 60,7.5
+cache_hit: decision "Lockfile unchanged?" @ 122.5,5 40x24
+restore_cache: process "Restore node_modules from cache" @ 132.5,47.5
+lint: process "Run linter" @ 180,7.5
+lint_pass: decision "Lint passed?" @ 232.5,5 40x24
+fail: terminator "Build fails" @ 232.5,38.8
+test: process "Run test suite" @ 285,7.4
+bundle: process "Bundle and minify" @ 337.5,7.4
+done: terminator "dist/ written" @ 390,8.8
+
+start -> install
+install -> cache_hit
+cache_hit -> restore_cache [route=elbow via="142.5,32.2 115,32.2 115,57" beginpt=s] : "yes"
+restore_cache -> lint [route=elbow via="215,57 215,35 199,35"]
+cache_hit -> lint : "no"
+lint -> lint_pass
+lint_pass -> test : "yes"
+lint_pass -> fail : "no"
+test -> bundle
+bundle -> done

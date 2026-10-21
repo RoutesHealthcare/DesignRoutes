@@ -1,0 +1,19 @@
+flow 1
+
+# A mind map, for the README: the topics under the central topic are its topics, each indented under the topic it
+# hangs off, with no connections to write. Nothing is placed by hand: the map lays them out on both sides.
+
+page "Mind map" size 279x116
+idea: centraltopic "New website"
+goals: topic "Goals"
+  g1: topic "More sign-ups"
+  g2: topic "Faster pages"
+users: topic "Users"
+  u1: topic "Shoppers"
+  u2: topic "Staff"
+  u3: topic "Partners"
+content: topic "Content"
+  c1: topic "Blog"
+tech: topic "Tech"
+  t1: topic "React"
+  t2: topic "Hosting"

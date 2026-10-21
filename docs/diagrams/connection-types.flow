@@ -1,0 +1,64 @@
+flow 1
+page "Connection types" size 440x314 direction LR
+
+# Every connection type, labelled with what you type to get it. The key at the bottom is the
+# page's own key (key "..."): it lists each type used on the page with its meaning, by itself.
+
+h1: text "Process flow" @ 15,8 120x8
+f1: process "A" @ 15,20 24x12
+f2: process "B" @ 105,20 24x12
+d1: process "A" @ 15,40 24x12
+d2: process "B" @ 105,40 24x12
+m1: process "A" @ 15,60 24x12
+m2: process "B" @ 105,60 24x12
+a1: process "A" @ 15,80 24x12
+a2: process "B" @ 105,80 24x12
+w1: process "A" @ 15,100 24x12
+w2: process "B" @ 105,100 24x12
+n1: process "A" @ 15,120 24x12
+n2: process "B" @ 105,120 24x12
+
+h2: text "System relationships" @ 155,8 120x8
+p1: process "A" @ 155,20 24x12
+p2: process "B" @ 245,20 24x12
+s1: process "A" @ 155,40 24x12
+s2: process "B" @ 245,40 24x12
+g1: process "A" @ 155,60 24x12
+g2: process "B" @ 245,60 24x12
+r1: process "A" @ 155,80 24x12
+r2: process "B" @ 245,80 24x12
+o1: process "A" @ 155,100 24x12
+o2: process "B" @ 245,100 24x12
+c1: process "A" @ 155,120 24x12
+c2: process "B" @ 245,120 24x12
+
+h3: text "Database (crow's foot) and custom" @ 295,8 130x8
+e1: process "users" @ 295,20 24x12
+e2: process "orders" @ 385,20 24x12
+e3: process "person" @ 295,40 24x12
+e4: process "passport" @ 385,40 24x12
+e5: process "team" @ 295,60 24x12
+e6: process "member" @ 385,60 24x12
+x1: process "A" @ 295,80 24x12
+x2: process "B" @ 385,80 24x12
+
+f1 -> f2 : "a -> b"
+d1 -data-> d2 : "a -data-> b"
+m1 -msg-> m2 : "a -msg-> b"
+a1 -alt-> a2 : "a -alt-> b"
+w1 <-> w2 : "a <-> b"
+n1 .. n2 : "a .. b"
+
+p1 ..> p2 : "a ..> b"
+s1 -- s2 : "a -- b"
+g1 --|> g2 : "a --|> b"
+r1 ..|> r2 : "a ..|> b"
+o1 o-- o2 : "a o-- b"
+c1 *-- c2 : "a *-- b"
+
+e1 ||--o{ e2 : "a ||--o{ b"
+e3 ||--o| e4 : "a ||--o| b"
+e5 }o..|{ e6 : "a }o..|{ b"
+x1 -- x2 [style=dashed start=circle end=fdiamond means="Escalates to, when a visit is missed"] : "a -- b [style=dashed start=circle end=fdiamond]"
+
+key "Key: what each line means" @ 15,145

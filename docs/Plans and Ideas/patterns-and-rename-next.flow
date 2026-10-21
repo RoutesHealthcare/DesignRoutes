@@ -1,0 +1,115 @@
+flow 1
+
+# ---------------------------------------------------------------------------
+# Page 0: where the patterns and rename work stands, in a few cards
+# ---------------------------------------------------------------------------
+page "0. Summary"
+
+summary: container "Patterns and rename: what's left" [flow=column gap=4]
+pitch: process "Built on react-migration: renaming shapes, 101 programming patterns in four palette groups,\ncontainer backgrounds, sequence diagrams inside containers, and fixes for delete and drag.\nThis is the rest: getting it committed, rename follow-ups and palette polish." 190x24 [fill=#DCE3EB size=13 in=summary]
+points: container [flow=row gap=4 in=summary]
+p1: sticky "First: commit\n\nDocs pictures are stale,\nand patterns.flow feeds\nthe skill (page 2)" 60x38 [in=points]
+p2: sticky "Small follow-ups\n\nRename from the canvas,\nundo in the text pane,\nlook-alike icons" 60x38 [in=points]
+p3: sticky "Then grow\n\nSave your own patterns,\na generator script, and\nideas for more (page 5)" 60x38 [in=points]
+status: callout "Status: built and tested (717 tests: both builds and the docs run), not committed.\nNothing on pages 3 and 4 is started; page 5's list is built." 190x18 [in=summary]
+
+# ---------------------------------------------------------------------------
+# Page 1: what's built, for reference
+# ---------------------------------------------------------------------------
+page "1. Built"
+
+built: grid { What, Where, Tests; "Rename: Id field, right-click, F2", "rename.ts, text-rename.ts, CodeRename.tsx", rename.spec.js; Placed patterns keep their connections, patternLines in patterns.ts, code-patterns.spec.js; 101 code patterns in four groups, code-patterns.ts, code-patterns.spec.js; Patterns drag in from the palette, "palette.ts, Stage.tsx", code-patterns.spec.js; "Delete a container, its contents go too", selection.ts deleteShapes, code-patterns.spec.js; "Container backdrops: bg=, bgfill=", containers.ts, containers.spec.js; Sequences inside a container, checkSequences in language.ts, planning.spec.js; Properties edits apply on a canvas click, pointer.ts, rename.spec.js; Chart tests skip the backdrop, render.ts data-bg, "wireframe, more-charts"; Every pattern described and animated, "Pattern.animation, addSteps in language.ts", pattern-animation.spec.js; "Deleting shapes tidies the @animation block", syncFromModel in sync.ts, pattern-animation.spec.js } @ 15,15 267x96
+
+note: callout "Rename shares one helper with patterns: renameInLine in flow/language.ts rewrites a\nshape's own id, [in=] and both ends of its connections, and nothing in quotes or comments." @ 15,118 170x14
+
+# ---------------------------------------------------------------------------
+# Page 2: before committing
+# ---------------------------------------------------------------------------
+page "2. Before committing"
+
+docs: process "Run the docs tests\nnpx playwright test\n--project=docs" @ 10,20 44x22
+rewritten: document "Rewritten:\npatterns.flow + PNG,\neditor.png (Id field),\nevery docs PNG" @ 66,18 46x28
+big: decision "patterns.flow now holds\n112 patterns. All of them\nin the skill's examples?" @ 124,14 60x36
+split: process "Split it: patterns.flow for\nUI patterns, code-patterns.flow\nfor the rest (images.spec.js)" @ 124,66 60x24
+skill: process "Rebuild the skill\nnode scripts/\nbuild-flow-skill.mjs" @ 206,20 44x22
+build: process "npm run build\n(dist is tracked)" @ 206,56 44x16
+tests: process "npm test\nboth builds" @ 206,84 44x16
+review: process "Review the\nwhole diff" @ 206,112 44x16
+commit: terminator "Commit on\nreact-migration" @ 206,140 44x16
+
+docs -> rewritten
+rewritten -> big
+big -> skill : "yes"
+big -> split : "no: ~1000 lines\nin examples.md"
+split -> skill
+skill -> build
+build -> tests
+tests -> review
+review -> commit
+
+flaky: callout "Under a full parallel run a few tests\ntime out at 30 s (mind map drag, PNG/PDF\nexport, container drags) and pass when\nrun alone. Worth a look: fewer workers,\nor a longer timeout for those specs." @ 10,108 90x34
+
+# ---------------------------------------------------------------------------
+# Page 3: rename follow-ups
+# ---------------------------------------------------------------------------
+page "3. Rename follow-ups"
+
+rename: container "Rename: still to do" [flow=row gap=5]
+
+small: container "Small" [flow=column gap=3 in=rename]
+r1: sticky "Rename from the canvas\n\nRight-click a shape:\nRename, the same box and\nrenameShape as the text" 58x28 [in=small]
+r2: sticky "Undo inside the text pane\n\nCtrl+Z while typing there is\nthe textarea's own undo,\nwhich a rename wipes; the\napp's undo works from the\ncanvas" 58x34 [in=small]
+r3: sticky "Implicit shapes\n\nAn id only named by\nconnections renames fine;\nalso offer 'declare it'" 58x26 [in=small]
+
+later: container "With other features" [flow=column gap=3 in=rename]
+r4: sticky "Links (links-design.flow)\n\nlink=\"page#id\" must follow\na rename: extend\nrenameInLine, the one place\nids are rewritten" 58x32 [in=later]
+r5: sticky "Find and replace\n(find-design.flow)\n\nReplacing an id goes\nthrough renameShape" 58x30 [in=later]
+r6: sticky "Includes (include-design)\n\nctx.web ids: renaming web\nin the included file can't\nreach files that include it" 58x30 [in=later]
+
+# ---------------------------------------------------------------------------
+# Page 4: the pattern palette
+# ---------------------------------------------------------------------------
+page "4. Palette"
+
+palette: container "Pattern palette: polish and tools" [flow=row gap=5]
+
+look: container "How it looks" [flow=column gap=3 in=palette]
+q1: sticky "Sub-headings\n\nDesign patterns is 24 long:\nCreational, Structural,\nBehavioural headings" 58x28 [in=look]
+q2: sticky "Look-alike icons\n\nBuilder, Command, Adapter,\nDependency Injection are all\nfour boxes: give each a mark" 58x28 [in=look]
+q3: sticky "Hover preview\n\nA small picture of the\npattern before it goes in,\ndrawn from its lines" 58x28 [in=look]
+
+tools: container "Tools" [flow=column gap=3 in=palette]
+t1: sticky "My patterns\n(include-design stage 1)\n\nSave a selection as a pattern;\nplacing it already works like\nthe built-in ones" 58x32 [in=tools]
+t2: sticky "A generator script\n\nPatterns and their walk-\nthroughs came from checked\ndrafts and specs (ids to\nlight, captions) via throwaway\nscripts: make them\nscripts/patterns-from-flow.mjs" 58x40 [in=tools]
+t3: sticky "Self-messages\n\nA lifeline's message to\nitself isn't drawn yet;\nretry and callback\nsequences need it" 58x30 [in=tools]
+
+# ---------------------------------------------------------------------------
+# Page 5: more patterns worth adding
+# ---------------------------------------------------------------------------
+page "5. More patterns"
+
+more: grid { Group, Built, Drawn as; Architecture, "Event sourcing, Saga, Strangler fig", systems boxes and a flowchart; Architecture, "Retry with backoff, Rate limiter", "a state machine, a flowchart"; Architecture, "Webhook, Token refresh, Checkout", sequences in a frame; Algorithms, "Bellman-Ford, Union-find, KMP", "graphs, worked examples"; Algorithms, "Huffman coding, AVL rotation", node trees; "Data structures (in Algorithms)", "B-tree, Skip list, Bloom filter", nodes and rows of boxes; Design patterns, "Null object, Object pool", UML classes; Machine learning, "RNN / LSTM, Autoencoder, Reinforcement learning, Learning curves", "boxes, a loop, a chart" } @ 15,15 267x78
+
+ml: callout "All built, each described and with its walk-through: 112 patterns in all (11 UI, 26 design, 20 architecture,\n41 algorithms, 14 machine learning). Ideas for later: consistent hashing, Raft, sharding, GAN, diffusion." @ 15,100 230x14
+
+how: callout "Same steps as every batch so far: draft one page per pattern, run check-flow, screenshot each one and fix what reads badly,\nthen generate the code-patterns.ts entries and add each to the frame map in code-patterns.spec.js." @ 15,120 230x14
+
+# ---------------------------------------------------------------------------
+# Page 6: a suggested order
+# ---------------------------------------------------------------------------
+page "6. Order" direction LR
+
+o1: terminator "Commit what's\nbuilt (page 2)"
+o2: process "Small fixes:\ncanvas rename,\ntext pane undo,\nicons"
+o3: process "Palette\nsub-headings and\nhover preview"
+o4: process "Generator script"
+o5: process "My patterns"
+o6: process "More patterns,\na batch at a time"
+o7: terminator "With links, find\nand includes:\nrename follows"
+
+o1 -> o2
+o2 -> o3
+o3 -> o4
+o4 -> o5
+o4 -> o6
+o5 ..> o7 : "when those\nfeatures land"

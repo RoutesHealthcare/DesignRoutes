@@ -1,0 +1,48 @@
+flow 1
+page "Module architecture" size 342x173
+
+# How DesignRoutes's own source fits together. React draws the page; most components are still
+# markup only, and the modules in src/js wire them up by id from their init() (left column).
+# Palette and Stage already own their handlers (right column), the pattern the rest are moving
+# to. Everything commits through document.ts. See the README's Developing section for the full
+# file-by-file list; this groups them by role.
+
+app: terminator "main.tsx + App.tsx - React entry: draws the components, then loads main.ts" @ 94.7,8.9 60x26.5
+
+comps: process "Toolbar, Props, DiagramTextEditor, PageTabs, Tour, Notify, ShowDiagram, dialogs (.tsx) - markup only" @ 7.5,9 67.5x26
+main: terminator "main.ts - runs each module's init() in order, core.ts first" @ 97.2,46.5 55x25
+reactowned: process "Palette.tsx + Stage.tsx - markup and their own handlers" @ 169.4,10.8 60x22.5
+core: data "core.ts - shared state S, \nconstants, DOM/XML helpers; \nused by every module" @ 232.5,78 65x17.5
+
+uichrome: process "properties.ts, connection-props.ts, hot-keys.ts, text-pane.ts, intellisense.ts, dialogs.ts, tutorial.ts - init() wires the UI" @ 10,50.5 62.5x22.5
+paljs: process "palette.ts - placeShape and the select/connect tool store" @ 173.2,43.9 52.5x22.5
+
+editing: process "selection.ts, pointer.ts, text-editor.ts - direct manipulation on the canvas" @ 11.3,80.8 60x22.5
+document: process "document.ts - document state, undo/redo, rebuild" @ 92.5,110.5 47.5x20
+shapes: data "src/shapes (TypeScript) - \na ShapeDef per shape, palette\nentry included; SHAPES, PALETTE, \nbuild, add" @ 245.2,43 82.3x23.3
+
+render: process "render.ts - draws shapes to SVG, selection overlay, zoom and pan" @ 12.5,110.5 57.5x20
+formats: process "formats/import.ts, export.ts, raster.ts - Mermaid, PlantUML, DOT, draw.io, PNG, PDF" @ 166.2,109.3 62.5x22.5
+langsync: process "flow/language.ts + flow/sync.ts - .flow text parser/writer, text<->canvas sync" @ 135,138 60x17.5
+
+geoconn: process "geometry.ts + connectors.ts - ShapeSheet geometry, connector routing and glue" @ 15,138 52.5x20
+visio: process "visio-io.ts, visio-package.ts, layout.ts - Visio packages and automatic layout" @ 237.5,110.5 60x20
+model: data "flow/model.ts - connection \ntypes and user-defined cells" @ 204.7,139.3 70x15
+
+app -> comps [route=elbow beginpt=w endpt=e] : "draws"
+app -> main [route=elbow] : "loads after drawing"
+app -> reactowned [route=elbow] : "draws"
+main -> uichrome [route=elbow via="124.7,77.5 75.7,77.5 75.7,61.7" beginpt=s endpt=e] : "init()"
+uichrome ..> comps [route=elbow] : "wires by id"
+uichrome -> editing [route=elbow]
+reactowned -> paljs [route=elbow] : "onClick, onDrop"
+reactowned ..> shapes [route=elbow beginpt=e endpt=n] : "PALETTE"
+paljs -> shapes [route=elbow] : "addShape"
+paljs -> document [route=elbow via="170,55.1 170,100 116.2,100" endpt=n] : "commit"
+editing -> document [route=elbow endpt=n] : "commit"
+document -> render [route=elbow] : "rebuild"
+render -> geoconn [route=elbow]
+document <-> formats [route=elbow] : "model"
+visio -> formats [route=elbow]
+document <-> langsync [route=elbow beginpt=s] : "sync"
+langsync -> model [route=elbow]

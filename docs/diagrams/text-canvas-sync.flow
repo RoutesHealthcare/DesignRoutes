@@ -1,0 +1,31 @@
+flow 1
+page "Text pane and canvas sync" size 395x124 direction LR
+
+# Edits from either side go through the same document.ts commit, which is why
+# undo/redo and rebuild stay consistent whichever side you worked on.
+
+usertypes: terminator "User types in the text pane" @ 5,5 52.5x16.5
+parse: process "flow/language.ts - parses .flow text" @ 75,4 67.5x15
+intelli: process "intellisense.ts - suggests the next token" @ 72.5,35 75x16.5
+model: data "Parsed model: shapes, connections, pages" @ 150,4 90x15
+syncin: process "flow/sync.ts - applies text to canvas" @ 245,6.5 70x12.5
+commitdoc: process "document.ts - commit, rebuild, add undo entry" @ 222.5,62.5 80x11.5
+rendercanvas: process "render.ts - redraws the SVG canvas" @ 317.5,64 62.5x10
+
+userdrags: terminator "User drags, resizes or reroutes on canvas" @ 12.5,62.5 80x14
+pointeredit: process "pointer.ts, src/shapes, connectors.ts - apply the edit" @ 110,61.5 82.5x15
+syncout: process "flow/sync.ts - writes canvas back to text" @ 225,81.5 75x10
+writetext: process "flow/language.ts - serialises .flow text" @ 230,97.5 65x11.5
+textpaneupdates: terminator "Text pane (#codeText) updates" @ 305,99 72.5x10
+
+usertypes -> parse
+parse -> intelli : "as you type"
+parse -> model
+model -> syncin
+syncin -> commitdoc [route=elbow via="280,25 272.5,25 272.5,55 262.5,55" beginpt=s]
+commitdoc -> rendercanvas
+userdrags -> pointeredit
+pointeredit -> commitdoc : "commit"
+commitdoc -> syncout
+syncout -> writetext
+writetext -> textpaneupdates
