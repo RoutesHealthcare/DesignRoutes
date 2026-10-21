@@ -1,6 +1,6 @@
 /* Rebuilds every picture in the documentation, using the app itself, as part of npm test:
      - docs/diagrams/shape-gallery.flow, generated from the palette, so it always shows every shape
-     - docs/diagrams/patterns.flow, every ready-made pattern on one page, generated from PATTERNS the same way
+     - docs/diagrams/patterns.flow, every ready-made pattern, one page per pattern group, generated from PATTERNS
      - a PNG of every .flow in docs/diagrams and examples, made with the app's own PNG export
        (one PNG per page for a file with several pages: name-<page>.png). Each page is fitted to its content
        first and the size saved into the .flow, so the editor opens it at the same size as its picture
@@ -87,23 +87,29 @@ test('the shape gallery shows every palette shape', async ({app, page}) => {
 });
 
 test('the patterns page shows every ready-made pattern', async ({app, page}) => {
-    test.setTimeout(120_000);   // over a hundred patterns on one page, laid out and exported
+    test.setTimeout(120_000);   // over a hundred patterns across several pages, laid out and exported
     const flow = await page.evaluate(async () => {
-        const {PATTERNS, patternLines} = await import('/shapes/index.ts');
+        const {PATTERNS, PATTERN_GROUPS, patternLines} = await import('/shapes/index.ts');
+        const BS = String.fromCharCode(92);
+        const q = s => '"' + String(s).split(BS).join(BS + BS).split('"').join(BS + '"').split('\n').join(BS + 'n') + '"';
         const out = ['flow 1', '',
-            '# Every ready-made pattern on the palette, put in the way the Patterns buttons put them in.',
-            '# Generated from PATTERNS by tests/docs/images.spec.js on every test run; edits here are overwritten.',
-            '', 'page "Patterns" direction LR'], used = new Set();
-        let x = 10, y = 10, rowH = 0;
-        for (const p of PATTERNS) {   // in rows, left to right, using each pattern's rough size
-            if (x > 10 && x + p.w > 360) {
-                x = 10;
-                y += rowH + 20;
-                rowH = 0;
+            '# Every ready-made pattern on the palette, one page per pattern group, put in the way the Patterns',
+            '# buttons put them in. Generated from PATTERNS by tests/docs/images.spec.js on every test run; edits',
+            '# here are overwritten.'];
+        for (const [key, label] of Object.entries(PATTERN_GROUPS)) {
+            out.push('', `page ${q(label)} direction LR`);
+            const used = new Set();
+            let x = 10, y = 10, rowH = 0;
+            for (const p of PATTERNS.filter(p => p.group === key)) {   // in rows, left to right, using each pattern's rough size
+                if (x > 10 && x + p.w > 360) {
+                    x = 10;
+                    y += rowH + 20;
+                    rowH = 0;
+                }
+                out.push('', ...patternLines(p, x, y, used).lines);
+                x += p.w + 20;
+                rowH = Math.max(rowH, p.h);
             }
-            out.push('', ...patternLines(p, x, y, used).lines);
-            x += p.w + 20;
-            rowH = Math.max(rowH, p.h);
         }
         return out.join('\n') + '\n';
     });

@@ -19,7 +19,7 @@ export type Pattern = {
     label: string
     title: string
     icon: string        // SVG markup in a 44x28 box, like a shape's palette icon
-    w: number, h: number   // how big it comes out, in mm (measured off docs/diagrams/patterns.png), to centre it
+    w: number, h: number   // how big it comes out, in mm (measured off the docs/diagrams/patterns-*.png galleries), to centre it
     lines: string[]     // its statements; the first is the outermost container, at @ 0,0
     /* its walk-through for present mode: step lines (step 1, then $id changes...) numbered from 1, added to the
        file's @animation block after any steps already there (addSteps in engine/flow/language.ts) */

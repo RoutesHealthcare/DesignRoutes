@@ -172,15 +172,45 @@ to tick, a picture grid and a code to type) and a grid table, and there are char
   Text formats that have no grid (Mermaid, DOT and so on) carry it as a label with `|` between cells, which reads
   back as a grid.
 
-**Patterns:** the palette's last group drops a whole piece of a page at once: a login form, sign-up form, settings
-page, cookie banner, search results, chat, store locator, directions, dashboard, customer journey map or kanban board. A
-pattern is ordinary text,
-not a shape of its own: it is
-added to the current page as a flexi container (`[flow=column]`, `[flow=row]`) with its shapes inside, so it comes
-selected and moves as one, each of its shapes has its own line to edit, and one undo takes it all away again. Ids
-that are already used on the page get a number (`email_2`).
+**Patterns:** the palette's last group drops a whole piece of a page at once. A pattern is ordinary text, not a shape
+of its own: it is added to the current page as a flexi container (`[flow=column]`, `[flow=row]`) with its shapes
+inside, so it comes selected and moves as one, each of its shapes has its own line to edit, and one undo takes it all
+away again. Ids that are already used on the page get a number (`email_2`). The group is split into five:
 
-![Ready-made patterns](docs/diagrams/patterns.png)
+- **UI patterns:** login form, sign-up form, settings page, cookie banner, search results, chat, store locator,
+  directions, dashboard, customer journey map and kanban board.
+
+  ![UI patterns](docs/diagrams/patterns-ui-patterns.png)
+
+- **Design patterns:** drawn as UML class or sequence diagrams: Singleton, Factory Method, Observer, Strategy,
+  Decorator, Adapter, Abstract Factory, Builder, Prototype, Facade, Composite, Proxy, Command, State, Template
+  Method, Iterator, Chain of Responsibility, Visitor, Dependency Injection, Flyweight, Mediator, Memento, Bridge,
+  Interpreter, Null object and Object pool.
+
+  ![Design patterns](docs/diagrams/patterns-design-patterns.png)
+
+- **Architecture:** systems and services as boxes, and request flows as sequence diagrams: Layered architecture,
+  Publish/subscribe, CQRS, Microservices, Web app architecture, Circuit breaker, Unit of Work, Model-View-Controller,
+  Repository, Client-server request, TCP handshake, OAuth sign-in, Event sourcing, Saga, Strangler fig, Retry with
+  backoff, Rate limiter, Webhook, Token refresh and Checkout.
+
+  ![Architecture patterns](docs/diagrams/patterns-architecture.png)
+
+- **Algorithms:** data structures and algorithms as flowcharts, node diagrams and UML states: Linear and binary
+  search, Bubble, Insertion, Selection, Merge, Quick and Heap sort, Binary search tree, Linked list, Doubly linked
+  list, Stack, Queue, Breadth-first and Depth-first search, Dijkstra, Bellman-Ford, A* search, Hash table, Recursion,
+  Euclid's algorithm, Binary heap, Trie, LRU cache, Topological sort, Dynamic programming, Two pointers, Sliding
+  window, Backtracking, Adjacency matrix and list, Ring buffer, Union-find, KMP string search, Huffman coding, AVL
+  rotation, B-tree, Skip list, Bloom filter, Minimum spanning tree, and the worked examples Traffic light and Order
+  lifecycle.
+
+  ![Algorithm patterns](docs/diagrams/patterns-algorithms.png)
+
+- **Machine learning:** layers of nodes, flowcharts and worked examples: Neural network, Training loop, Gradient
+  descent, Backpropagation, CNN, Transformer block, Decision tree, k-means clustering, Confusion matrix, ML
+  pipeline, RNN/LSTM, Autoencoder, Reinforcement learning and Learning curves.
+
+  ![Machine learning patterns](docs/diagrams/patterns-machine-learning.png)
 
 **BI / dashboards:**
 
