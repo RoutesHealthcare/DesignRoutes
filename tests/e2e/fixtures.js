@@ -17,8 +17,13 @@ export const VISIO_THEMED=resolve('tests/fixtures/themed-arrow.vsdx');
 export class FlowApp{
   constructor(page){ this.page=page; }
   get shapes(){ return this.page.locator('#layer > [data-id]'); }
-  /* A top-level shape whose text is exactly `text` */
-  shape(text){ return this.shapes.filter({has:this.page.locator('tspan',{hasText:new RegExp(`^${text.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}$`)})}); }
+  /* A top-level shape whose text is exactly `text`. Labels live in a separate #labels layer (so a crossing
+     connector can never paint over them), mirroring each shape's data-id as a sibling group, not a descendant -
+     so this matches shapes by the data-id of their corresponding label rather than filtering for a nested tspan. */
+  shape(text){
+    const t=text.replace(/"/g,'&quot;');
+    return this.page.locator(`xpath=//*[@id="layer"]/*[@data-id and @data-id=//*[@id="labels"]/*[.//*[local-name()="tspan"][text()="${t}"]]/@data-id]`);
+  }
   async open(file=EXAMPLE){ await this.page.setInputFiles('#fileInput',file); await expect(this.shapes.first()).toBeVisible(); }
   /* Imports a file through the Import dialog; dest is new, replace or add */
   async importFile(file,dest='replace'){
