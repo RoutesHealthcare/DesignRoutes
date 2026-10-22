@@ -3,7 +3,6 @@ import {$, S, kid, kids, svg, toast} from './core';
 import {is1D, shapeCtx} from './visio-package';
 import {applyView, pageCtx, render, renderTabs} from './render';
 import {select} from './selection';
-import {updateProps} from './properties';
 import {EXPORTERS, FMT, exportIds, pageGraph, plural, type Format} from './formats/export';
 import {IMPORTERS} from './formats/import';
 import {applyTags, resolveType, userV} from './flow/model';
@@ -170,6 +169,17 @@ export function curLineFor(): number {   // the text line of the selected shape 
     return d && d.line != null ? d.line : -1;
 }
 
+/* Keeps the highlighted line in step with the selection when nothing else already would - rebuild() calls
+   refreshEditor() itself, but selection.ts's setSelection() changes S.sel without a rebuild */
+export function syncCurLine(): void {
+    if (!TP.open || TP.mode !== 'flow') return;
+    const c = curLineFor();
+    if (c !== TP.cur) {
+        TP.cur = c;
+        paintCode();
+    }
+}
+
 /* force: rewrite the pane's text even while the person is typing in it, or has edits not applied yet */
 export function refreshEditor(force = false): void {
     if (!TP.open) return;
@@ -227,7 +237,6 @@ export function applyFromEditor(now = false): void {
         S.text = t;
         setDirty(true);
         rebuild(selMemo());
-        updateProps();
     };
     if (now) run(); else TP.timer = setTimeout(run, 350);
 }

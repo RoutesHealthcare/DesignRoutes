@@ -4,13 +4,12 @@ import {is1D, shapeCtx} from './visio-package';
 import {fit, pageCtx, render, renderTabs, updateTitle} from './render';
 import {selIds} from './selection';
 import {commitText} from './text-editor';
-import {updateProps} from './properties';
 import {plural} from './formats/export';
 import {userV} from './flow/model';
 import {keepAnimationLast, parseFlow} from './flow/language';
 import {buildModel, syncFromModel, type SyncResult} from './flow/sync';
 import {TP, refreshEditor, setPane} from './text-pane';
-import {notify} from "./store";
+import {notify} from './store';
 
 /* How to find a selected shape again after a rebuild: a shape by its FlowId, a connector by its FlowEdge line */
 export type SelMemo = { el?: Element, fid?: string | null, edgeEl?: Element, key?: string | null };
@@ -115,7 +114,6 @@ function restore(from: UndoEntry[], to: UndoEntry[]): void {
     S.pi = u.pi;
     setDirty(true);
     rebuild(selMemo());
-    updateProps();
 }
 
 export const undo = (): void => {
@@ -139,7 +137,6 @@ export function loadText(text: string, name: string, handle?: FileSystemFileHand
     rebuild(null);
     updateTitle();
     fit();
-    updateProps();
     if (TP.errors.length) {
         setPane(true, TP.pinned);
         toast(`${plural(TP.errors.length, 'line')} in this file could not be read. They are marked in the text.`, 8000);
