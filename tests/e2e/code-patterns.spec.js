@@ -190,7 +190,7 @@ test('dragging a pattern\'s frame on the page moves everything in it', async ({a
     await openFlow(app, 'flow 1\npage "One"\nx: process "Step" @ 250,180\n');
     await addPattern(page, 'singleton');
     const before = await app.flowText();
-    const grab = await app.centreOf(app.shape('Singleton').first().locator('tspan').first());   // the frame's name, in its header
+    const grab = await app.centreOf(app.label('Singleton').first().locator('tspan').first());   // the frame's name, in its header
     await app.drag(grab, {x: grab.x + 80, y: grab.y + 40});
     const after = await app.flowText(), shift = id => placeOf(after, id).map((v, i) => v - placeOf(before, id)[i]);
     const [dx, dy] = shift('singleton');

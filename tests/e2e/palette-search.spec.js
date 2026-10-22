@@ -37,7 +37,7 @@ test('Enter adds the best match, a result can be clicked, and Escape brings the 
     await expect(wire).toHaveAttribute('open', '');
     await box(page).fill('treemap');
     await box(page).press('Enter');
-    await expect(app.shapes.filter({hasText: 'Rent'})).toHaveCount(1);
+    await expect(app.shape('Rent')).toHaveCount(1);
     await box(page).fill('journey');
     await results(page).locator('[data-pattern="journey"]').click();
     await expect(app.shape('Customer journey')).toHaveCount(1);

@@ -1,6 +1,6 @@
 ---
 name: designroutes-flow
-description: The DesignRoutes .flow diagram language, complete. Use whenever writing, editing, reading, explaining, reviewing or converting a .flow file or snippet (flowcharts, swimlanes, ER/database diagrams, UI wireframes, dashboards and charts, mind maps, org charts, UML, BPMN, sequence and C4 diagrams), or when the user asks for a DesignRoutes diagram of something.
+description: The DesignRoutes .flow diagram language, complete, with how to lay every shape out at fixed positions, split drawings across pages and animate them step by step for presenting. Use whenever writing, editing, reading, explaining, reviewing or converting a .flow file or snippet (flowcharts, swimlanes, ER/database diagrams, UI wireframes, dashboards and charts, mind maps, org charts, UML, BPMN, sequence and C4 diagrams), when the user asks for a DesignRoutes diagram, flow or walkthrough of something, or wants a process, system or piece of code explained as a diagram, even if they don't say .flow.
 ---
 
 # The `.flow` language
@@ -9,14 +9,20 @@ A `.flow` file is a whole DesignRoutes drawing as plain text: every page, shape,
 line. The editor saves it, shows it in its text pane, and rebuilds the canvas from it on every change, so the text is
 the drawing.
 
-This file is the whole language. The long lists are kept apart from it; look in them only when needed:
+This file is the language. Animation, the long lists and the layout method are kept apart from it; look in them
+when needed:
 
 - [references/shapes.md](references/shapes.md): every shape type by palette group, with what it is, its default label
   (which shows its label format), sample chart values and default size. Open it when choosing a type you're not sure
   of, or reading one you don't recognise.
 - [references/aliases.md](references/aliases.md): the other names a type can be written as (`rect`, `diamond`, `db`...).
+- [references/placement.md](references/placement.md): how to give every shape a fixed position on a grid without
+  overlaps. Open it whenever you write or extend a flow.
+- [references/animation.md](references/animation.md): the `@animation` block, which steps through a flow by lighting
+  up, moving, adding or hiding shapes. Open it whenever a flow explains something that happens in order.
 - [references/examples.md](references/examples.md): complete real files (swimlanes, kanban, mind map, org chart,
-  every connection type, every UI pattern, a whole app wireframe). Open one when building something similar.
+  every connection type, every UI pattern, a whole app wireframe). Open one when building something similar. The
+  README examples leave positions out to show automatic layout; when adapting one, add positions as in placement.md.
 
 <!-- skill-only -->
 Check any flow you write with the editor's own parser, bundled in this skill (needs Node 18+, nothing to install;
@@ -27,6 +33,14 @@ node scripts/check-flow.mjs file.flow     # or - to read stdin
 ```
 
 If Node isn't available, check by hand against the rules below instead.
+
+If the user has attached an editor export (`DesignRoutes-editor.html`) and Python has Playwright with Chromium, also
+render the flow in the real editor and look at the pictures before handing it over, including a few animation
+steps if it has any:
+
+```
+python3 scripts/render-flow.py DesignRoutes-editor.html file.flow out/ --steps 1,5,9
+```
 <!-- /skill-only -->
 
 ## A whole file
@@ -66,6 +80,7 @@ key "Key" @ 145,95
 | Shape      | `pick: process "Pick and pack" @ 145,20`      | On a page.                                                               |
 | Connection | `pick -> ship : "next"`                       | On a page.                                                               |
 | Key        | `key "Key" @ 145,95`                          | On a page; at most one per page.                                         |
+| Animation  | `@animation start` ... `@animation end`       | Optional; last in the file. See references/animation.md.                 |
 
 A file with no `page` line still works: everything goes on one page called `Page-1`.
 
@@ -213,7 +228,7 @@ Inside `[ ]`, separated by spaces: `[fill=#DCE3EB stroke=#2B3A47 weight=1.5]`.
 | `bg`      | `on` / `off`                                                                                        | Charts and framed wireframe shapes (nav bar, menu bar, tab bar, back header, hero, split pane, carousel, user menu, dropdown menu, KPI card): whether the backdrop is filled. On is the default, never written.           |
 | `bgfill`  | a colour                                                                                             | ... the backdrop's colour. White is the default, never written.                                                                                                            |
 | `map`     | `uk`, `france`; `yorkshire`, `lancashire`, `greatermanchester`, `merseyside`, `cheshire`, `cumbria` | `countrymap`: which country (UK default). `routemap`: which area (Yorkshire default).                                      |
-| `lang`    | `py`, `js`, `jsx`, `ts`, `tsx`, `cs`, `php`, `html`, `css`, `sql`, `java`, `go`, `rb`, `rs`, `swift`, `kt`, `cpp`, `c`, `sh` (full names like `python`, `javascript`, `typescript`, `csharp`, `ruby`, `rust`, `kotlin`, `shell` also accepted, normalised to the short code) | `script`: which language's extension shows in its corner, e.g. `.py` (`py` default). `jsx`/`tsx` are distinct from `js`/`ts`. |
+| `lang`    | `py`, `js`, `jsx`, `ts`, `tsx`, `cs`, `php`, `html`, `css`, `sql`, `java`, `go`, `rb`, `rs`, `swift`, `kt`, `cpp`, `c`, `sh`, `bat`, `ps1`, `pl`, `yaml`, `json`, `xml`, `xsd` (full names like `python`, `javascript`, `typescript`, `csharp`, `ruby`, `rust`, `kotlin`, `shell`, `batch`/`cmd`, `powershell`, `perl`, `yml` also accepted, normalised to the short code) | `script`: which language's extension shows in its corner, e.g. `.py` (`py` default). `jsx`/`tsx` are distinct from `js`/`ts`. |
 | `colours` | `#AA3377,#228833` (or quoted with spaces)                                                           | Charts and legends: a colour per series in order, the first replacing the fill. Give a chart and its legend the same list. |
 | `in`      | a container's id                                                                                    | The container, pool, lane or scroll area the shape is inside.                                                              |
 | `flow`    | `row` / `column`                                                                                    | Containers only: line up the members in the order of their lines.                                                          |
@@ -309,23 +324,28 @@ server: lifeline "Server"
 db: lifeline "Database"
 client -> server : "GET /orders"
 server -> db : "query"
-db ..> server : "rows"
-server ..> client : "200 OK"
+db -data-> server : "rows"
+server -data-> client : "200 OK"
 ```
 
 - Lifelines stand side by side in line order; each message is a level arrow, one under another in line order. The
   lifelines are as long as the messages need. Only the first lifeline takes a place; moving it moves the sequence.
 - A later lifeline with `@` stands on its own. A message with its own `beginpt`, `endpt` or `route=elbow` is drawn as
   those say. A message from a lifeline to itself isn't drawn yet (it stays in the text).
-- Use `->` for calls and `..>` for replies, by convention. `activation` is an activation bar shape.
+- Use `->` for calls and `-data->` for replies: a key lists `..>` as "Dependency", which misdescribes a reply.
+  `activation` is an activation bar shape.
 
 ### Automatic layout
 
-Shapes with no `@` are laid out automatically in the page's direction, following the connections (a layered graph):
-person cards joined by plain connections become an org chart, a chain of steps a flow. Mixing placed and unplaced
-shapes works. **When writing a new flow, leave positions out** unless the user wants a fixed layout: it's shorter,
-and the editor writes positions back once someone drags a shape. Add `@` when the layout really matters (wireframes,
-where shapes sit inside a screen; overlapping on purpose).
+Shapes with no `@` are laid out automatically in the page's direction, following the connections (a layered graph).
+Mixing placed and unplaced shapes works, and that's how flows written by others may arrive.
+
+**When writing a flow, give every shape a fixed place, `@ x,y WxH`**, so the drawing opens exactly as written and
+looks the same for everyone. The exceptions are shapes whose place belongs to something else, where an `@` would
+break the diagram: members of a flexi container (size only, `WxH` with no `@`), topics under a central topic (an `@`
+detaches them from the map) and every lifeline after the first in a sequence (an `@` stands it on its own). Place
+the container, central topic or first lifeline instead. How to work out coordinates without overlaps:
+[references/placement.md](references/placement.md); read it before placing anything.
 
 ## Connections
 
@@ -412,8 +432,7 @@ file, skip icon lines: they carry no meaning beyond the name.
 A line that can't be read is reported with its line number, and the rest is still drawn. Typical messages:
 
 - `Unknown shape type "proces". Try: process, decision, ...`
--
-`"->>" is not a connection. Try -> for a sequence, -data-> for data flow, ..> for a dependency or ||--o{ for one to many.`
+- `"->>" is not a connection. Try -> for a sequence, -data-> for data flow, ..> for a dependency or ||--o{ for one to many.`
 - `fill needs a colour like #1F6F78.`
 - `Unexpected "[bad]" after the connection.`: settings written after the label.
 - `There is no container "lane3" on this page.`: the shape is still drawn, just not inside anything.
@@ -422,7 +441,7 @@ A line that can't be read is reported with its line number, and the rest is stil
 ## Grammar
 
 ```
-file        = [ "flow 1" ] { icon } { page-block }
+file        = [ "flow 1" ] { icon } { page-block } [ animation ]
 icon        = "icon" name "\"data:image/...;base64,...\""
 page-block  = [ "page" "\"name\"" [ "size" W "x" H ] [ "direction" (TB|TD|LR|BT|RL) ] ] { shape | connection | key }
 shape       = id ":" type { "\"label\"" | "{" list "}" | "@" x "," y [ W "x" H ] | W "x" H | "[" settings "]" }
@@ -430,6 +449,9 @@ connection  = id TYPE id [ "[" settings "]" ] [ ":" ( "\"label\"" | text ) ]
 key         = "key" [ "\"title\"" ] [ "@" x "," y ]
 settings    = { name "=" ( value | "\"text\"" ) }
 comment     = "#" ... to the end of the line, at the start of a line or after a space
+animation   = "@animation start" { "step" N { change } } "@animation end"
+change      = "$" id [ type ] parts | "+" id ":" type parts | "-$" id | "+$" id
+parts       = what a shape line has after its type, in any order (label, list, place, size, settings)
 ```
 
 ## Writing a flow
@@ -442,14 +464,21 @@ comment     = "#" ... to the end of the line, at the start of a line or after a 
 2. Give every shape a short meaningful id (`check_stock`, not `s7`) and a human label.
 3. Choose connection types for their meaning: the key explains them, so `-alt->` for failure paths and `-data->` for
    data are worth using over plain `->`. Label every edge leaving a `decision`.
-4. Leave out positions unless the layout must be fixed. Use `direction LR` for wide process flows.
+4. Place every shape with `@ x,y WxH` (exceptions and method above). Give the page a `size` that holds them all.
 5. Add `key` when the page uses more than one connection type.
-6. Check it against the review list under Reading a flow: every id connected is declared, settings come before
+6. Use pages rather than crowding one: an overview first, then detail, reference tables or another view of the
+   same thing on later pages, each named so its tab says what it holds ("1 Overview", "2 Step by step").
+   Connections can't cross pages, so number steps and refer to them from page to page.
+7. When the flow explains something that happens in order, add an `@animation` block that walks through it, with
+   step numbers matching the drawing's (references/animation.md). Ids may repeat across pages, except on shapes
+   the animation changes.
+8. Check it against the review list under Reading a flow: every id connected is declared, settings come before
    labels, types are spelt as in the shape list.
 
 <!-- skill-only -->
 
-7. Run `check-flow.mjs` and fix anything it reports, including undeclared-id warnings.
+9. Run `check-flow.mjs` and fix anything it reports, including undeclared-id, unplaced and overlap warnings.
+10. If an editor export is available, run `render-flow.py` and look at every page and a few animation steps.
 
 <!-- /skill-only -->
 

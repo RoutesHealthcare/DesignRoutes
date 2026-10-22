@@ -98,7 +98,7 @@ const GRID_LINE='g1: grid { Name, "Role, team", Notes; Ann, Admin, ""; Bob, User
 test('a grid draws one cell per entry, and an unrelated edit leaves its line exactly as typed', async({app,page})=>{
     await openFlow(app,`flow 1\npage "UI"\n${GRID_LINE}\na: process "Step" @ 150,20\n`);
     for(const t of ['Name','Role, team','Notes','Ann','Admin','Bob','User','says "hi"']) await expect(app.shape(t)).toHaveCount(1);
-    expect(await app.shape('Ann').locator('text').count()).toBe(8);   // the empty cell has no text
+    expect(await app.label('Ann').locator('text').count()).toBe(8);   // the empty cell has no text
     const c=await app.centreOf(app.shape('Step'));
     await app.drag(c,{x:c.x+40,y:c.y});
     const text=await app.flowText();
@@ -129,7 +129,7 @@ test('rows and columns are added and removed from the properties panel, in one u
 
 test('a grid cell is edited on the page, and a grid comes from the palette', async({app,page})=>{
     await openFlow(app,'flow 1\npage "UI"\ng1: grid { A, B; 1, 2 } @ 20,20\n');
-    const c=await app.centreOf(app.shape('2').locator('tspan',{hasText:/^2$/}));
+    const c=await app.centreOf(app.label('2').locator('tspan',{hasText:/^2$/}));
     await page.mouse.dblclick(c.x,c.y);
     await expect(app.textEditor).toHaveValue('2');
     await page.keyboard.type('Two'); await page.keyboard.press('Control+Enter');
@@ -481,7 +481,7 @@ test('a sparkline is a line with no frame, a dot on its latest value and its lab
     const dot=tealParts(app,'Sales');
     await expect(dot).toHaveCount(1);
     await expect(tealParts(app,'Sample')).toHaveCount(1);
-    const end=await dot.boundingBox(), label=await app.shape('Sales').locator('text').boundingBox();
+    const end=await dot.boundingBox(), label=await app.label('Sales').locator('text').boundingBox();
     expect(label.x).toBeGreaterThan(end.x+end.width);       // the label is beside the line's end, not over it
     expect(await app.flowText()).toContain('s1: sparkline "Sales" { 3, 9, 4, 6 } @ 10,10');
 });
@@ -514,7 +514,7 @@ test('a gauge fills its half dial to the percentage in its label', async({app,pa
 
 test('a KPI card shows its figure large, above its caption, and BI shapes come from the palette', async({app,page})=>{
     await openFlow(app,'flow 1\npage "BI"\nk1: kpi "£12.4k\\nRevenue"\n');
-    const sizes=await app.shapes.first().locator('text').evaluateAll(ts=>ts.map(t=>[t.textContent,+t.getAttribute('font-size'),t.getAttribute('font-weight')]));
+    const sizes=await app.labels.first().locator('text').evaluateAll(ts=>ts.map(t=>[t.textContent,+t.getAttribute('font-size'),t.getAttribute('font-weight')]));
     expect(sizes[0][0]).toBe('£12.4k'); expect(sizes[1][0]).toBe('Revenue');
     expect(sizes[0][1]).toBeCloseTo(sizes[1][1]*2,1); expect(sizes[0][2]).toBe('bold');
     const BI = ['bar', 'hbar', 'stackedbar', 'stackedhbar', 'percentbar', 'percenthbar', 'histogram', 'waterfall', 'funnel', 'line', 'area', 'stackedarea', 'percentarea', 'radar', 'radararea', 'polar', 'spiral', 'pie', 'donut', 'scatter', 'bubble', 'candlestick', 'boxplot', 'heatmap', 'gantt', 'treemap', 'wordcloud', 'sankey', 'chord', 'tilemap', 'worldmap', 'countrymap', 'routemap', 'sparkline', 'bullet', 'dial', 'kpi', 'legend', 'legendrow'];
@@ -534,7 +534,7 @@ test('a legend draws a square per name in its label, each in its series colour, 
     expect(new Set(fills).size).toBe(4);
     const tops = (await partBoxes(app, 'North')).map(b => b.top);
     for (let i = 1; i < tops.length; i++) expect(tops[i]).toBeGreaterThan(tops[i - 1]);   // top down, in label order
-    await expect(app.shape('North').locator('text')).toContainText(['North', 'South', 'East', 'West']);
+    await expect(app.label('North').locator('text')).toContainText(['North', 'South', 'East', 'West']);
     expect(await app.flowText()).toContain('l1: legend "North | South | East | West" @ 10,10');
 });
 
@@ -632,7 +632,7 @@ test('only switches, checkboxes, radios and robot checks have a state, and it is
 });
 
 /* The screen x of each part of a segmented label, in the order they were drawn */
-const partXs=(app,title)=>app.shape(title).locator('text').evaluateAll(ts=>ts.map(t=>{ const b=t.getBoundingClientRect(); return b.left+b.width/2; }));
+const partXs=(app,title)=>app.label(title).locator('text').evaluateAll(ts=>ts.map(t=>{ const b=t.getBoundingClientRect(); return b.left+b.width/2; }));
 
 test('tabs draw one slot per part of the label, the first one marked open', async({app,page})=>{
     await openFlow(app,'flow 1\npage "UI"\nt1: tabs "Home | Profile | Settings" @ 10,10\nt2: tabs "Overview | A rather long tab name" @ 10,30\n');
@@ -642,7 +642,7 @@ test('tabs draw one slot per part of the label, the first one marked open', asyn
     await expect(tealParts(app,'Home')).toHaveCount(1);        // the bar under the open tab
     const bar=await tealParts(app,'Home').boundingBox(), box=await app.shape('Home').boundingBox();
     expect(bar.width).toBeLessThan(box.width/2);
-    const [a,b]=await app.shape('Overview').locator('text').evaluateAll(ts=>ts.map(t=>t.getBoundingClientRect().height));
+    const [a,b]=await app.label('Overview').locator('text').evaluateAll(ts=>ts.map(t=>t.getBoundingClientRect().height));
     expect(b).toBeCloseTo(a,0);                                // the long name is not wrapped onto a second line
     await addFromPalette(page,'tabs');
     const text=await app.flowText();
@@ -651,7 +651,7 @@ test('tabs draw one slot per part of the label, the first one marked open', asyn
 });
 
 /* The screen y of each part of a segmented label, in the order they were drawn */
-const partYs=(app,title)=>app.shape(title).locator('text').evaluateAll(ts=>ts.map(t=>{ const b=t.getBoundingClientRect(); return b.top+b.height/2; }));
+const partYs=(app,title)=>app.label(title).locator('text').evaluateAll(ts=>ts.map(t=>{ const b=t.getBoundingClientRect(); return b.top+b.height/2; }));
 const rising=xs=>xs.every((x,i)=>!i||x>xs[i-1]);
 
 test('segmented shapes draw a slot per part: rows left to right, columns top to bottom', async({app,page})=>{
@@ -729,7 +729,7 @@ test('a range slider puts a handle at each percentage in its label and fills bet
 
 test('a form field boxes the middle of its three parts: name, value and message, top down', async ({app}) => {
     await openFlow(app, 'flow 1\npage "UI"\nf1: formfield "Email | sam@example.com | Enter a valid email" @ 10,10\n');
-    const ys = await app.shape('Email').locator('text').evaluateAll(ts => ts.map(t => t.getBoundingClientRect().top));
+    const ys = await app.label('Email').locator('text').evaluateAll(ts => ts.map(t => t.getBoundingClientRect().top));
     expect(ys).toHaveLength(3);
     expect(ys[0]).toBeLessThan(ys[1]);
     expect(ys[1]).toBeLessThan(ys[2]);
@@ -743,7 +743,7 @@ test('page pieces: nav bar, modal, card, alert and tooltip', async({app,page})=>
     const xs=await partXs(app,'Acme'); expect(xs).toHaveLength(3); expect(rising(xs)).toBe(true);
     await expect(tealParts(app,'Acme')).toHaveCount(1);        // the logo
     await expect(tealParts(app,'Saved.')).toHaveCount(1);      // the bar down the alert's edge
-    expect(await app.shape('Tip').locator('text').getAttribute('fill')).toBe('#FFFFFF');   // light text on the dark tooltip
+    expect(await app.label('Tip').locator('text').getAttribute('fill')).toBe('#FFFFFF');   // light text on the dark tooltip
     await expect(app.shape('Delete?')).toHaveCount(1); await expect(app.shape('Title')).toHaveCount(1);
     const kinds=['navbar','modal','card','alert','tooltip'];
     for(const k of kinds) await addFromPalette(page,k);
@@ -764,7 +764,7 @@ test('a star rating fills as many stars as its score, out of its total', async({
 test('small pieces: avatar, badge and icon placeholder', async({app,page})=>{
     await openFlow(app,'flow 1\npage "UI"\na: avatar "SR" @ 10,10\nb: tag "Beta" @ 30,10\n');
     await expect(app.shape('SR')).toHaveCount(1);
-    expect(await app.shape('Beta').locator('text').getAttribute('fill')).toBe('#FFFFFF');   // light text on the filled badge
+    expect(await app.label('Beta').locator('text').getAttribute('fill')).toBe('#FFFFFF');   // light text on the filled badge
     const kinds=['avatar','badge','rating','glyph'];
     for(const k of kinds) await addFromPalette(page,k);
     const text=await app.flowText();
@@ -786,7 +786,7 @@ test('feedback pieces: a spinner fades round, a toast is a white card with a whi
     expect(fills).toContain('#FFFFFF');                          // the card
     expect(fills).toContain('#1F6F78');                          // the tick's circle
     await expect(app.shape('Saved').locator('path[fill="none"][stroke="#FFFFFF"]')).toHaveCount(1);   // the tick
-    expect(await app.shape('Required').locator('text').getAttribute('fill')).toBe('#B9474F');
+    expect(await app.label('Required').locator('text').getAttribute('fill')).toBe('#B9474F');
     const kinds = ['spinner', 'skeleton', 'toast', 'emptystate', 'inlineerror'];
     for (const k of kinds) await addFromPalette(page, k);
     const text = await app.flowText();
@@ -801,7 +801,7 @@ test('navigation pieces: menus light their first item, a tab bar fills its first
                                                                                                                                }) => {
     await openFlow(app, 'flow 1\npage "UI"\nd1: openmenu "Sort | New | Old" @ 10,10\nc1: contextmenu "Cut | Copy | Paste" @ 80,10\n' +
         'm1: menubar "File | Edit | View" @ 10,60\nt1: bottomnav "Home | Search | Me" @ 10,80\nf1: fab @ 120,80\nb1: appbar "Settings" @ 10,110\n');
-    const ys = await app.shape('Sort').locator('text').evaluateAll(ts => ts.map(t => t.getBoundingClientRect().top));
+    const ys = await app.label('Sort').locator('text').evaluateAll(ts => ts.map(t => t.getBoundingClientRect().top));
     expect(ys).toHaveLength(3);
     expect(ys[0]).toBeLessThan(ys[1]);
     for (const t of ['Sort', 'Cut']) {
@@ -872,7 +872,7 @@ test('content pieces: a bell shows a badge only with a count, a comment thread e
     await expect(dots).toHaveCount(1);                           // the first slide's dot
     await expect(app.shape('let n = 1')).toHaveCount(1);
     await expect(app.shape('Hi there')).toHaveCount(1);
-    const ys = await app.shape('Ana: Bigger?').locator('text').evaluateAll(ts => ts.map(t => t.getBoundingClientRect().top));
+    const ys = await app.label('Ana: Bigger?').locator('text').evaluateAll(ts => ts.map(t => t.getBoundingClientRect().top));
     expect(ys).toHaveLength(3);
     expect(ys.every((y, i) => !i || y > ys[i - 1])).toBe(true);  // top down, the reply last
     expect(await partXs(app, 'Ana Smith')).toHaveLength(3);
@@ -889,8 +889,9 @@ test('chat bubbles sit on the left or, with side=right, mirrored on the right', 
         'm3: chatbubble "Great" @ 10,50 70x12 [side=left]\n');
     /* where the avatar (the first part) and the text sit, as fractions of the bubble's width */
     const sides = t => app.shape(t).evaluate(g => {
+        const lg = document.querySelector(`#labels > [data-id="${CSS.escape(g.getAttribute('data-id'))}"]`);
         const b = g.getBoundingClientRect(), a = g.querySelector('path[data-sec="0"]').getBoundingClientRect(),
-            x = g.querySelector('text').getBoundingClientRect();
+            x = lg.querySelector('text').getBoundingClientRect();
         return {avatar: (a.left + a.width / 2 - b.left) / b.width, text: (x.left + x.width / 2 - b.left) / b.width};
     });
     const left = await sides('Hi, are you free?'), right = await sides('Yes, at 3');
@@ -971,7 +972,8 @@ test('map screens: a map, satellite and street view with their search text along
     await expect(page.locator('#tpStatus')).not.toHaveText(/^Line \d+:/);
     for (const t of ['Cafes near me', 'Leeds', 'High Street']) {
         const pos = await app.shape(t).evaluate(g => {
-            const r = g.querySelector('text').getBoundingClientRect(), b = g.getBoundingClientRect();
+            const lg = document.querySelector(`#labels > [data-id="${CSS.escape(g.getAttribute('data-id'))}"]`);
+            const r = lg.querySelector('text').getBoundingClientRect(), b = g.getBoundingClientRect();
             return {y: r.top + r.height / 2 - b.top, x: r.left - b.left, h: b.height, w: b.width};
         });
         expect(pos.y).toBeLessThan(pos.h * 0.2);                     // in the search box (or card) along the top
@@ -1000,7 +1002,7 @@ test('robot checks: a box to tick that takes [state=on], a picture grid and a co
     const paths = t => app.shape(t).locator('path[data-sec]').count();
     expect(await paths('Ticked')).toBe(await paths('Not ticked') + 1);   // the tick
     // the instruction is white on the band along the top
-    const fill = await app.shape('Select all squares with buses').locator('text').getAttribute('fill');
+    const fill = await app.label('Select all squares with buses').locator('text').getAttribute('fill');
     expect(fill?.toUpperCase()).toBe('#FFFFFF');
     await expect(app.shape('x7Kp2')).toHaveCount(1);
     const kinds = ['captcha', 'imagecaptcha', 'textcaptcha'];
@@ -1016,7 +1018,8 @@ test('device frames: a tablet, a smartwatch and an app window with its title in 
     await expect(app.shape('Dashboard')).toHaveCount(1);
     await expect(app.shape('10:09')).toHaveCount(1);
     const win = await app.shape('Settings').evaluate(g => {
-        const t = g.querySelector('text').getBoundingClientRect(), b = g.getBoundingClientRect();
+        const lg = document.querySelector(`#labels > [data-id="${CSS.escape(g.getAttribute('data-id'))}"]`);
+        const t = lg.querySelector('text').getBoundingClientRect(), b = g.getBoundingClientRect();
         return {t: t.top + t.height / 2 - b.top, h: b.height};
     });
     expect(win.t).toBeLessThan(win.h * 0.2);                     // the title is in the bar along the top

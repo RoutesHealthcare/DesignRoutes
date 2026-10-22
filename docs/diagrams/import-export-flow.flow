@@ -1,5 +1,5 @@
 flow 1
-page "Import and export data flow" size 344x88 direction LR
+page "Import and export data flow" size 344x87 direction LR
 
 # What happens to a drawing on the way in and the way out. PNG and PDF are a
 # one-way snapshot: pictures, not diagram files, so they cannot be imported back.

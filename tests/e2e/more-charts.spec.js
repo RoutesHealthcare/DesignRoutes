@@ -47,7 +47,7 @@ test('a legend row puts each square just before its name, side by side, in the s
     const squares = await filledParts(app.shapes.first());
     expect(squares).toHaveLength(3);
     expect(new Set(squares.map(s => s[0])).size).toBe(3);
-    const names = await app.shapes.first().locator('text').evaluateAll(ts => ts.map(t => t.getBoundingClientRect().left));
+    const names = await app.labels.first().locator('text').evaluateAll(ts => ts.map(t => t.getBoundingClientRect().left));
     names.forEach((left, i) => {
         const gap = left - (squares[i][1] + squares[i][2]);              // from the square's right edge to its name
         expect(gap).toBeGreaterThan(0);
@@ -59,10 +59,12 @@ test('a legend row puts each square just before its name, side by side, in the s
     expect(text).toContain('l: hlegend "North | A much longer name | East" @ 10,10');
 });
 
-/* For each name on a shape that places its own labels: the name, and whether its middle is inside a filled part */
+/* For each name on a shape that places its own labels: the name, and whether its middle is inside a filled part.
+   shape is the #layer group (the drawn tiles); its names are in the sibling #labels group sharing its data-id. */
 const namesOnTiles = shape => shape.evaluate(g => {
+    const lg = document.querySelector(`#labels > [data-id="${CSS.escape(g.getAttribute('data-id'))}"]`);
     const tiles = [...g.querySelectorAll('path[data-sec]:not([fill="none"])')].map(p => p.getBoundingClientRect());
-    return [...g.querySelectorAll('text')].map(t => {
+    return [...lg.querySelectorAll('text')].map(t => {
         const r = t.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
         return [t.textContent, tiles.some(b => x > b.left && x < b.right && y > b.top && y < b.bottom)];
     });
@@ -75,25 +77,25 @@ test('a treemap puts each name on its own tile, with its own values and with the
     await openFlow(app, 'flow 1\npage "BI"\nm: treemap "Rent | Food | Fun" { 6, 3, 1 } @ 10,10 90x60\n' +
         'odd: tiles "A | B | C | D" { 2, 1 } @ 110,10\n');
     await expect(page.locator('#tpStatus')).not.toHaveText(/^Line \d+:/);
-    const shop = app.shapes.filter({hasText: 'Rent'});
+    const shop = app.shape('Rent');
     expect(await namesOnTiles(shop)).toEqual([['Rent', true], ['Food', true], ['Fun', true]]);
     const tiles = await filledParts(shop);
     expect(tiles).toHaveLength(3);
     const area = t => t[2];   // widths share the same height in a row; the biggest value has the widest tile here
     expect(area(tiles[0])).toBeGreaterThan(area(tiles[2]));
     // more names than values: the extra names have no tile and aren't drawn
-    expect((await namesOnTiles(app.shapes.filter({hasText: 'A'}))).map(n => n[0])).toEqual(['A', 'B']);
+    expect((await namesOnTiles(app.shape('A'))).map(n => n[0])).toEqual(['A', 'B']);
     // editing the label on the page renames the tiles
     await app.click('Rent');
     await app.click('Rent');
     await page.keyboard.press('Control+a');
     await page.keyboard.type('Home | Food | Fun');
     await page.keyboard.press('Control+Enter');
-    await expect(app.shapes.filter({hasText: 'Home'})).toHaveCount(1);
-    expect(await namesOnTiles(app.shapes.filter({hasText: 'Home'}))).toEqual([['Home', true], ['Food', true], ['Fun', true]]);
+    await expect(app.shape('Home')).toHaveCount(1);
+    expect(await namesOnTiles(app.shape('Home'))).toEqual([['Home', true], ['Food', true], ['Fun', true]]);
     // from the palette: the sample values, with the default names on them
     await addFromPalette(page, 'treemap');
-    const fresh = app.shapes.filter({hasText: 'Travel'});
+    const fresh = app.shape('Travel');
     const names = await namesOnTiles(fresh);
     expect(names).toHaveLength(5);
     expect(names.every(n => n[1])).toBe(true);
@@ -109,12 +111,13 @@ test('a word cloud sizes each word by its value and packs them without overlappi
     await openFlow(app, 'flow 1\npage "BI"\na: process "Step" @ 150,10\n' +
         'w: tagcloud "Fast | Simple | Friendly | Cheap | Secure | Calm" { 10, 6, 5, 3, 2, 1 } @ 10,10 100x60\n');
     await expect(page.locator('#tpStatus')).not.toHaveText(/^Line \d+:/);
-    const cloud = app.shapes.filter({hasText: 'Fast'});
+    const cloud = app.shape('Fast');
     const words = await cloud.evaluate(g => {
+        const lg = document.querySelector(`#labels > [data-id="${CSS.escape(g.getAttribute('data-id'))}"]`);
         const box = g.getBoundingClientRect();
         return {
             box: {l: box.left, r: box.right, t: box.top, b: box.bottom},
-            words: [...g.querySelectorAll('text')].map(t => {
+            words: [...lg.querySelectorAll('text')].map(t => {
                 const r = t.getBoundingClientRect();
                 return {
                     w: t.textContent,
@@ -138,7 +141,7 @@ test('a word cloud sizes each word by its value and packs them without overlappi
             expect(a.l < b.r - 1 && b.l < a.r - 1 && a.t < b.b - 1 && b.t < a.b - 1).toBe(false);
     }
     await addFromPalette(page, 'wordcloud');
-    await expect(app.shapes.filter({hasText: 'Reliable'})).toHaveCount(1);
+    await expect(app.shape('Reliable')).toHaveCount(1);
     const text = await app.flowText();
     expect(text).toMatch(/: wordcloud "Fast \| Simple/);
     expect(text).toContain('w: tagcloud "Fast | Simple | Friendly | Cheap | Secure | Calm" { 10, 6, 5, 3, 2, 1 } @ 10,10 100x60');
@@ -151,14 +154,14 @@ test('a Sankey joins its named nodes with bands as wide as their flows, skipping
     await openFlow(app, 'flow 1\npage "BI"\na: process "Step" @ 150,10\n' +
         's: alluvial "In | Kept | Lost" { 1, 2, 30; 1, 3, 10; 1, 7, 5 } @ 10,10 100x60\n');
     await expect(page.locator('#tpStatus')).not.toHaveText(/^Line \d+:/);
-    const shape = app.shapes.filter({hasText: 'Kept'});
+    const shape = app.shape('Kept');
     const parts = await filledParts(shape);
     expect(parts).toHaveLength(5);                                   // two bands, then three nodes
     const nodeH = await shape.locator('path[data-sec]:not([fill="none"])').evaluateAll(ps =>
         ps.slice(2).map(p => p.getBoundingClientRect().height));
     expect(nodeH[0]).toBeGreaterThan(nodeH[1]);                      // In (40) is taller than Kept (30) ...
     expect(nodeH[1] / nodeH[2]).toBeCloseTo(3, 0);                   // ... and Kept three times Lost (10)
-    expect(await shape.locator('text').allTextContents()).toEqual(['In', 'Kept', 'Lost']);
+    expect(await app.label('Kept').locator('text').allTextContents()).toEqual(['In', 'Kept', 'Lost']);
     for (const [vals, msg] of [['{ 1, 0, 5 }', 'counting from 1'], ['{ 2, 2, 5 }', 'not back to the same one'],
         ['{ 1, 2 }', 'three numbers per flow']]) {
         await openFlow(app, `flow 1\npage "BI"\na: process "Step"\ns: sankey "A | B" ${vals} @ 10,10\n`);
@@ -166,7 +169,7 @@ test('a Sankey joins its named nodes with bands as wide as their flows, skipping
     }
     await openFlow(app, 'flow 1\npage "BI"\na: process "Step" @ 150,10\n');
     await addFromPalette(page, 'sankey');
-    await expect(app.shapes.filter({hasText: 'Signed up'})).toHaveCount(1);
+    await expect(app.shape('Signed up')).toHaveCount(1);
     expect(await app.flowText()).toMatch(/: sankey "Visits \| Signed up/);
 });
 
@@ -177,15 +180,16 @@ test('a chord diagram has an arc per group with its name outside, a ribbon per p
     await openFlow(app, 'flow 1\npage "BI"\na: process "Step" @ 150,10\n' +
         'c: chorddiagram "UK | France | Spain" { 0, 5, 3; 4, 0, 0; 2, 0, 0 } @ 10,10 70x70\n');
     await expect(page.locator('#tpStatus')).not.toHaveText(/^Line \d+:/);
-    const shape = app.shapes.filter({hasText: 'France'});
+    const shape = app.shape('France');
     // ribbons UK-France and UK-Spain (France and Spain send each other nothing), then three arcs
     expect(await filledParts(shape)).toHaveLength(5);
     const outside = await shape.evaluate(g => {
+        const lg = document.querySelector(`#labels > [data-id="${CSS.escape(g.getAttribute('data-id'))}"]`);
         const arcs = [...g.querySelectorAll('path[data-sec]:not([fill="none"])')].slice(-3).map(p => p.getBoundingClientRect()),
             l = Math.min(...arcs.map(r => r.left)), r = Math.max(...arcs.map(r => r.right)),
             t = Math.min(...arcs.map(r => r.top)), bt = Math.max(...arcs.map(r => r.bottom)),
             cx = (l + r) / 2, cy = (t + bt) / 2, rad = (r - l) / 2;
-        return [...g.querySelectorAll('text')].map(tx => {
+        return [...lg.querySelectorAll('text')].map(tx => {
             const q = tx.getBoundingClientRect();
             return Math.hypot(q.left + q.width / 2 - cx, q.top + q.height / 2 - cy) > rad;
         });
@@ -195,7 +199,7 @@ test('a chord diagram has an arc per group with its name outside, a ribbon per p
     await expect(page.locator('#tpStatus')).toContainText('square table');
     await openFlow(app, 'flow 1\npage "BI"\na: process "Step" @ 150,10\n');
     await addFromPalette(page, 'chord');
-    await expect(app.shapes.filter({hasText: 'Italy'})).toHaveCount(1);
+    await expect(app.shape('Italy')).toHaveCount(1);
     expect(await app.flowText()).toMatch(/: chord "UK \| France \| Spain \| Italy"/);
 });
 
@@ -206,7 +210,7 @@ test('a tile map gives each region a tile shaded by its value, darkest for the h
     await openFlow(app, 'flow 1\npage "BI"\na: process "Step" @ 150,10\n' +
         't: choropleth "North | South | East | West" { 2, 9, 5 } @ 10,10 60x60\n');
     await expect(page.locator('#tpStatus')).not.toHaveText(/^Line \d+:/);
-    const shape = app.shapes.filter({hasText: 'North'});
+    const shape = app.shape('North');
     expect(await namesOnTiles(shape)).toEqual([['North', true], ['South', true], ['East', true], ['West', true]]);
     const lum = await shape.locator('path[data-sec]:not([fill="none"])').evaluateAll(ps => ps.map(p => {
         const h = p.getAttribute('fill'), n = parseInt(h.slice(1), 16);
@@ -216,16 +220,20 @@ test('a tile map gives each region a tile shaded by its value, darkest for the h
     expect(lum[2]).toBeLessThan(lum[0]);   // ... darker than North (2) ...
     expect(lum[0]).toBeLessThan(lum[3]);   // ... and West, with no value, palest
     await addFromPalette(page, 'tilemap');
-    await expect(app.shapes.filter({hasText: 'Scotland'})).toHaveCount(1);
+    await expect(app.shape('Scotland')).toHaveCount(1);
     expect(await app.flowText()).toContain('t: choropleth "North | South | East | West" { 2, 9, 5 } @ 10,10 60x60');
 });
 
-/* Each name drawn on a map, with the fill of the region under its middle, as [name, fill] */
-const regionFillsUnder = shape => shape.evaluate(g => [...g.querySelectorAll('text')].map(t => {
-    const r = t.getBoundingClientRect(), under = document.elementsFromPoint(r.left + r.width / 2, r.top + r.height / 2)
-        .find(e => e.matches('path[data-sec]:not([fill="none"])') && g.contains(e));
-    return [t.textContent, under?.getAttribute('fill')];
-}));
+/* Each name drawn on a map, with the fill of the region under its middle, as [name, fill]. shape is the #layer
+   group (the drawn regions); its names are in the sibling #labels group sharing its data-id. */
+const regionFillsUnder = shape => shape.evaluate(g => {
+    const lg = document.querySelector(`#labels > [data-id="${CSS.escape(g.getAttribute('data-id'))}"]`);
+    return [...lg.querySelectorAll('text')].map(t => {
+        const r = t.getBoundingClientRect(), under = document.elementsFromPoint(r.left + r.width / 2, r.top + r.height / 2)
+            .find(e => e.matches('path[data-sec]:not([fill="none"])') && g.contains(e));
+        return [t.textContent, under?.getAttribute('fill')];
+    });
+});
 
 test('a world map shades the countries named in the label by their values and names them on the map', async ({
                                                                                                                  app,
@@ -234,7 +242,7 @@ test('a world map shades the countries named in the label by their values and na
     await openFlow(app, 'flow 1\npage "BI"\na: process "Step" @ 250,10\n' +
         'w: geomap "Brazil | USA | Atlantis | Côte d\'Ivoire | India" { 2, 9, 5, 4 } @ 10,10 200x90\n');
     await expect(page.locator('#tpStatus')).not.toHaveText(/^Line \d+:/);
-    const shape = app.shapes.filter({hasText: 'Brazil'});
+    const shape = app.shape('Brazil');
     expect(await shape.locator('path[data-sec]:not([fill="none"])').count()).toBeGreaterThan(150);   // every country
     const under = Object.fromEntries(await regionFillsUnder(shape));
     expect(Object.keys(under)).toEqual(['Brazil', 'USA', "Côte d'Ivoire", 'India']);   // no Atlantis on the map
@@ -253,15 +261,15 @@ test('a country map (the UK) has its twelve regions, named by name, short name o
                                                                                                                                   }) => {
     await openFlow(app, 'flow 1\npage "BI"\na: process "Step" @ 150,10\n' +
         'u: countrymap "Scotland | NI | Yorkshire | TLI" { 1, 2, 3, 4 } @ 10,10 70x120\n');
-    const shape = app.shapes.filter({hasText: 'Scotland'});
+    const shape = app.shape('Scotland');
     await expect(shape.locator('path[data-sec]:not([fill="none"])')).toHaveCount(12);
     const under = await regionFillsUnder(shape);
     expect(under.map(u => u[0])).toEqual(['Scotland', 'NI', 'Yorkshire', 'TLI']);
     expect(new Set(under.map(u => u[1])).size).toBe(4);                       // a shade each
     await addFromPalette(page, 'worldmap');
     await addFromPalette(page, 'countrymap');
-    await expect(app.shapes.filter({hasText: 'Australia'})).toHaveCount(1);
-    await expect(app.shapes.filter({hasText: 'West Midlands'})).toHaveCount(1);
+    await expect(app.shape('Australia')).toHaveCount(1);
+    await expect(app.shape('West Midlands')).toHaveCount(1);
     const text = await app.flowText();
     expect(text).toMatch(/: worldmap "USA \| Brazil/);
     expect(text).toMatch(/: countrymap "East Midlands \|/);
@@ -274,7 +282,7 @@ test('a route map (Yorkshire) shades its parts and draws motorways in blue and m
     await openFlow(app, 'flow 1\npage "BI"\na: process "Step" @ 220,10\n' +
         'r: roads "West Yorkshire | Sheffield | North Yorks" { 9, 4 } @ 10,10 180x140\n');
     await expect(page.locator('#tpStatus')).not.toHaveText(/^Line \d+:/);
-    const shape = app.shapes.filter({hasText: 'West Yorkshire'});
+    const shape = app.shape('West Yorkshire');
     await expect(shape.locator('path[data-sec]:not([fill="none"])')).toHaveCount(4);
     const under = Object.fromEntries(await regionFillsUnder(shape));
     expect(Object.keys(under)).toEqual(['West Yorkshire', 'Sheffield', 'North Yorks']);   // Sheffield: South Yorkshire
@@ -288,7 +296,7 @@ test('a route map (Yorkshire) shades its parts and draws motorways in blue and m
     expect(roads.filter(s => s === '#4A6FB5').length).toBeGreaterThan(5);     // motorways
     expect(roads.filter(s => s === '#5E8C33').length).toBeGreaterThan(50);    // primary A roads
     await addFromPalette(page, 'routemap');
-    await expect(app.shapes.filter({hasText: 'East Yorkshire'})).toHaveCount(1);
+    await expect(app.shape('East Yorkshire')).toHaveCount(1);
     const text = await app.flowText();
     expect(text).toContain('r: roads "West Yorkshire | Sheffield | North Yorks" { 9, 4 } @ 10,10 180x140');
     expect(text).toMatch(/: routemap "East Yorkshire \|/);

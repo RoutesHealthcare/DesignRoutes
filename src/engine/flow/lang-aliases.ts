@@ -9,4 +9,9 @@ export const LangAliases: Record<string, string> = {
     rust: 'rs',
     kotlin: 'kt',
     shell: 'sh',
+    batch: 'bat',
+    cmd: 'bat',
+    powershell: 'ps1',
+    perl: 'pl',
+    yml: 'yaml',
 }

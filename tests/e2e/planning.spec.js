@@ -12,9 +12,11 @@ async function addFromPalette(page, kind) {
     await b.click();
 }
 
-/* Where a shape's text sits in it: its middle as fractions of the shape's box, y down */
+/* Where a shape's text sits in it: its middle as fractions of the shape's box, y down. shape is the #layer group
+   (the drawn box); its text is in the sibling #labels group sharing its data-id. */
 const textAt = shape => shape.evaluate(g => {
-    const t = g.querySelector('text').getBoundingClientRect(), b = g.querySelector('path').getBoundingClientRect();
+    const lg = document.querySelector(`#labels > [data-id="${CSS.escape(g.getAttribute('data-id'))}"]`);
+    const t = lg.querySelector('text').getBoundingClientRect(), b = g.querySelector('path').getBoundingClientRect();
     return {x: (t.left + t.width / 2 - b.left) / b.width, y: (t.top + t.height / 2 - b.top) / b.height};
 });
 
@@ -27,7 +29,7 @@ test('planning: a sticky note, a callout, a milestone with its name under it and
     for (const t of ['Call Sam', 'Why?', 'Launch']) await expect(app.shape(t)).toHaveCount(1);
     await expect(app.shape('Call Sam').locator('path[fill="#FFE38A"]')).toHaveCount(1);   // sticky yellow
     expect((await textAt(app.shape('Launch'))).y).toBeGreaterThan(1);                      // under the diamond
-    const card = app.shapes.filter({hasText: 'Head of design'});
+    const card = app.shape('Head of design');
     await expect(card).toHaveCount(1);
     expect((await textAt(card)).x).toBeGreaterThan(0.4);                               // beside the picture
     const kinds = ['sticky', 'callout', 'milestone', 'personcard'];
@@ -45,7 +47,7 @@ test('UML: a class box has a line between each compartment, states join up, a li
     await openFlow(app, 'flow 1\npage "UML"\nc1: class "Order | id: int | total()" @ 10,10\nc2: umlclass "Customer | name" @ 70,10\n' +
         's0: initial @ 130,15\ns1: state "Waiting" @ 150,10\ns2: endstate "Done" @ 200,15\nl1: participant "Server" @ 10,70\n' +
         'a1: activation @ 23,90\ns0 -> s1\ns1 -> s2\n');
-    const lines = t => app.shapes.filter({hasText: t}).first().locator('path[data-sec="1"][fill="none"]').getAttribute('d');
+    const lines = t => app.shape(t).locator('path[data-sec="1"][fill="none"]').getAttribute('d');
     expect((await lines('Order')).match(/M/g)).toHaveLength(2);       // three compartments, two lines
     expect((await lines('Customer')).match(/M/g)).toHaveLength(1);
     await expect(app.shape('Waiting')).toHaveCount(1);
@@ -157,7 +159,7 @@ test('UML sequence: the lifelines in a container make a sequence of their own, i
         expect(b.x + b.width).toBeLessThan(frame.x + frame.width);
     }
     expect(await app.flowText()).toBe(text);                                     // nothing written back
-    const grab = await app.centreOf(app.shape('Request').locator('tspan').first());
+    const grab = await app.centreOf(app.label('Request').locator('tspan').first());
     await app.drag(grab, {x: grab.x + 60, y: grab.y + 30});
     const after = await sequenceOf(app);
     expect(after.boxes.client.x - client.x).toBeCloseTo(60, -1);                 // the whole sequence went with it
@@ -210,7 +212,7 @@ test('C4 and network: kinds with a digit in them parse, dark boxes get white tex
         'k: c4component "Sign-in" @ 140,15\nf: firewall "Edge" @ 10,80\nq: mq "Orders" @ 50,80\nm: smartphone "App" @ 90,80\np -> s\n');
     await expect(page.locator('#tpStatus')).not.toHaveText(/^Line \d+:/);
     for (const t of ['Customer', 'Shop', 'Sign-in']) await expect(app.shape(t)).toHaveCount(1);
-    const ink = t => app.shape(t).locator('text').getAttribute('fill');
+    const ink = t => app.label(t).locator('text').getAttribute('fill');
     expect(await ink('Shop')).toBe('#FFFFFF');
     expect(await ink('Sign-in')).not.toBe('#FFFFFF');                  // the lightest blue keeps dark text
     for (const t of ['Edge', 'Orders', 'App']) expect((await textAt(app.shape(t))).y).toBeGreaterThan(1);
@@ -278,7 +280,7 @@ test('mind map: topics joined to a central topic spread out to both sides of it,
         expect(Math.sign(k.cx - idea.cx)).toBe(Math.sign(p.cx - idea.cx));
     }
     expect((await box('Later')).t).toBeGreaterThan(Math.max(...Object.values(xs).map(b => b.b)));
-    expect(await app.shape('Website').locator('text').getAttribute('fill')).toBe('#FFFFFF');
+    expect(await app.label('Website').locator('text').getAttribute('fill')).toBe('#FFFFFF');
     for (const k of ['centraltopic', 'topic']) await addFromPalette(page, k);
     const text = await app.flowText();
     for (const k of ['centraltopic', 'topic']) expect(text).toMatch(new RegExp(`: ${k} "`));
@@ -293,7 +295,7 @@ test('timeline, phases and moods: a dot or chevron per part of the label, the fa
         'm1: mood "Happy" @ 10,80\nm2: feeling "Frustrated" @ 40,80 [face=angry]\nm3: emotion "Okay" @ 70,80 [face=:(]\n' +
         'm4: mood "Sad" @ 100,80 [face=:D]\nm5: mood "Cross" @ 130,80 [face=mad]\n');
     await expect(page.locator('#tpStatus')).not.toHaveText(/^Line \d+:/);
-    const filled = t => app.shapes.filter({hasText: t}).first().locator('path[data-sec]:not([fill="none"])').count();
+    const filled = t => app.shape(t).locator('path[data-sec]:not([fill="none"])').count();
     expect(await filled('Feb')).toBe(3);                               // a dot per month
     expect(await filled('Build')).toBe(2);                             // a chevron per phase
     // each face is shaded by its face setting, never its label: green, red, blue, green (laughing), amber
