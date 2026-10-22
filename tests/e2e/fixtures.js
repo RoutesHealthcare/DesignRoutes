@@ -14,15 +14,32 @@ export const VISIO=resolve('tests/fixtures/visio-flowchart.vsdx');
 export const VISIO_THEMED=resolve('tests/fixtures/themed-arrow.vsdx');
 
 /* Drives the editor through its UI only, so the same tests run against the source and the bundle */
+/* An XPath string literal for s. XPath 1.0 has no in-literal escape for its own delimiter (no &quot;-style entity),
+   so a plain "${s}" breaks on any text with a literal double quote in it (e.g. says "hi") - split on " instead and
+   rejoin with concat(), each " spliced in as its own single-quoted literal. */
+function xpathLiteral(s){
+  if(!s.includes('"')) return `"${s}"`;
+  return `concat(${s.split('"').map(p=>`"${p}"`).join(`, '"', `)})`;
+}
+
 export class FlowApp{
   constructor(page){ this.page=page; }
   get shapes(){ return this.page.locator('#layer > [data-id]'); }
+  /* Every shape's own #labels group (its text, possibly several tspans for a chart with many names), in the same
+     left-to-right order as #layer's shapes */
+  get labels(){ return this.page.locator('#labels > [data-id]'); }
   /* A top-level shape whose text is exactly `text`. Labels live in a separate #labels layer (so a crossing
      connector can never paint over them), mirroring each shape's data-id as a sibling group, not a descendant -
      so this matches shapes by the data-id of their corresponding label rather than filtering for a nested tspan. */
   shape(text){
-    const t=text.replace(/"/g,'&quot;');
-    return this.page.locator(`xpath=//*[@id="layer"]/*[@data-id and @data-id=//*[@id="labels"]/*[.//*[local-name()="tspan"][text()="${t}"]]/@data-id]`);
+    const t=xpathLiteral(text);
+    return this.page.locator(`xpath=//*[@id="layer"]/*[@data-id and @data-id=//*[@id="labels"]/*[.//*[local-name()="tspan"][text()=${t}]]/@data-id]`);
+  }
+  /* The #labels-layer group holding a shape's text, found the same way as shape() - for assertions about the text
+     itself (its colour, a tspan, a rotated header) rather than the shape's drawn parts */
+  label(text){
+    const t=xpathLiteral(text);
+    return this.page.locator(`xpath=//*[@id="labels"]/*[.//*[local-name()="tspan"][text()=${t}]]`);
   }
   async open(file=EXAMPLE){ await this.page.setInputFiles('#fileInput',file); await expect(this.shapes.first()).toBeVisible(); }
   /* Imports a file through the Import dialog; dest is new, replace or add */

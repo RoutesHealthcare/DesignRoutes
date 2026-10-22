@@ -101,6 +101,13 @@ export const LANGS: Record<string, { name: string }> = {
     cpp: {name: 'C++'},
     c: {name: 'C'},
     sh: {name: 'Shell'},
+    bat: {name: 'Batch'},
+    ps1: {name: 'PowerShell'},
+    pl: {name: 'Perl'},
+    yaml: {name: 'YAML'},
+    json: {name: 'JSON'},
+    xml: {name: 'XML'},
+    xsd: {name: 'XSD'},
 }
 /* The fold is a square (its two straight edges equal), folded in half along its diagonal, whatever the shape's own
    proportions: sized off the shorter side so a tall, narrow script doesn't grow a stretched-out corner */

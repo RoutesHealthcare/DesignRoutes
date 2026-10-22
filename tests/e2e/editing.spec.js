@@ -55,7 +55,7 @@ test('the Text colour picker colours a shape\'s text', async({app,page})=>{
   await app.click('Step A');
   await expect(page.locator('#textColWrap')).toBeVisible();
   await setColour(page,'#pTextCol','#fa4616');
-  await expect(app.shape('Step A').locator('text')).toHaveAttribute('fill','#FA4616');
+  await expect(app.label('Step A').locator('text')).toHaveAttribute('fill','#FA4616');
   expect(await app.flowText()).toMatch(/a1: process "Step A".*text=#FA4616/);
 });
 
@@ -64,12 +64,12 @@ test('the Text colour picker colours a connection label, and text= works on conn
   await page.mouse.click(p.x,p.y+3);
   await expect(app.title).toHaveText('Connection');
   await setColour(page,'#pTextCol','#00b5e2');
-  await expect(app.shape('next').locator('text')).toHaveAttribute('fill','#00B5E2');
+  await expect(app.label('next').locator('text')).toHaveAttribute('fill','#00B5E2');
   expect(await app.flowText()).toMatch(/a1 -> a2 \[[^\]]*text=#00B5E2[^\]]*\] : "next"/);
 });
 
 test('the Text colour picker works on several shapes at once', async({app,page})=>{
   await app.click('Step A'); await app.click('Form',{modifiers:['Shift']});
   await setColour(page,'#pTextCol','#006f8e');
-  for(const name of ['Step A','Form']) await expect(app.shape(name).locator('text')).toHaveAttribute('fill','#006F8E');
+  for(const name of ['Step A','Form']) await expect(app.label(name).locator('text')).toHaveAttribute('fill','#006F8E');
 });

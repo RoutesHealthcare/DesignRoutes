@@ -25,7 +25,7 @@ test('importing keeps shapes, page size and right-angled connector routes', asyn
 
 test('a Visio soft line break stays inside the label', async({app,page})=>{
   await app.importFile(VISIO,'replace');
-  const shape=app.shapes.filter({has:page.locator('tspan',{hasText:/^Line one$/})});
+  const shape=app.label('Line one');
   await expect(shape).toHaveCount(1);
   await expect(shape.locator('tspan',{hasText:/^Line two$/})).toHaveCount(1);
   expect(await app.flowText()).toContain('"Line one\\nLine two"');

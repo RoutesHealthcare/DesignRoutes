@@ -60,7 +60,9 @@ test.describe('connections on a filled panel',()=>{
   test.beforeEach(async({app})=>{ await app.open({name:'panel.flow',mimeType:'text/plain',buffer:Buffer.from(PANEL)}); });
 
   test('a connection is drawn above the shapes it joins and beneath the shapes after them', async({app})=>{
-    const order=await app.shapes.evaluateAll(gs=>gs.map(g=>g.textContent.trim()));
+    // app.shapes is in paint order; each shape's text is in its sibling #labels group, not a descendant of g itself
+    const order=await app.shapes.evaluateAll(gs=>gs.map(g=>
+      document.querySelector(`#labels > [data-id="${CSS.escape(g.getAttribute('data-id'))}"]`).textContent.trim()));
     expect(order).toEqual(['Panel','A','B','go','Later']);
   });
 

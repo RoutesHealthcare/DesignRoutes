@@ -105,7 +105,7 @@ test('swimlanes: a pool stacks its lanes, and comes from the palette with two', 
     expect(holds(l1, await box(app.shape('Order')))).toBe(true);
     expect(holds(l2, await box(app.shape('Pack')))).toBe(true);
     // the lane's label reads upwards down its header
-    await expect(app.shape('Customer').locator('g[transform^="rotate(-90"] tspan')).toHaveCount(1);
+    await expect(app.label('Customer').locator('g[transform^="rotate(-90"] tspan')).toHaveCount(1);
 
     await page.click('#btnNew');   // nothing has changed, so it doesn't ask
     await addFromPalette(page, 'pool');
@@ -238,8 +238,11 @@ test('a scroll area keeps its size, cuts off what does not fit, and its thumb sh
     const last = await box(app.shape('Item 7'));
     expect(last.y + last.height).toBeGreaterThan(area.y + area.height);
     const visible = await page.evaluate(() => {
-        const g = [...document.querySelectorAll('#layer > [data-id]')].find(g => g.textContent.includes('Item 0'));
-        return !!document.elementsFromPoint(...(r => [r.x + r.width / 2, r.y + r.height / 2])(g.getBoundingClientRect())).find(e => g.contains(e));
+        // the text is drawn in a separate #labels layer (so a crossing connector can't paint over it); find the
+        // shape by its label's text, then switch to its #layer sibling (the drawn part) for the visibility check
+        const lbl = [...document.querySelectorAll('#labels > [data-id]')].find(l => l.textContent.includes('Item 0'));
+        const g = lbl && document.querySelector(`#layer > [data-id="${CSS.escape(lbl.getAttribute('data-id'))}"]`);
+        return !!g && !!document.elementsFromPoint(...(r => [r.x + r.width / 2, r.y + r.height / 2])(g.getBoundingClientRect())).find(e => g.contains(e));
     });
     expect(visible).toBe(true);
     // the thumb (the filled part of the bar) is shorter when more is hidden
@@ -324,7 +327,7 @@ test('a container is white behind its members unless bg=off, or the colour bgfil
     const text = await app.flowText();
     expect(text).toContain('off: container "See-through" @ 90,10 70x46 [bg=off]');
     expect(text).toContain('tinted: container "Tinted" @ 170,10 70x46 [bgfill=#FFF4D6]');
-    const label = await app.centreOf(app.shape('Default').locator('tspan', {hasText: 'Default'}));
+    const label = await app.centreOf(app.label('Default').locator('tspan', {hasText: 'Default'}));
     await page.mouse.click(label.x, label.y);                          // its header: Inside fills the middle
     await expect(page.locator('#bgWrap')).toBeVisible();               // switched off and on from the properties too
     await page.locator('#pBg').uncheck();
