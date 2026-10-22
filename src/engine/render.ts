@@ -93,8 +93,9 @@ function wrap(t: string, maxW: number, fs: number, bold = false): string[] {
 }
 
 /* Draws one shape (and, for a group, the shapes inside it) into g, and records its box, outline and line points
-   for hit testing. parentM maps the shape's parent's coordinates to page pixels. */
-function drawShape(el: Element, parentM: Mat, inheritMid: string | null, g: Element): void {
+   for hit testing. parentM maps the shape's parent's coordinates to page pixels. Its text goes into lg instead, a
+   layer kept on top of every shape and line so a crossing connector can never paint over a label. */
+function drawShape(el: Element, parentM: Mat, inheritMid: string | null, g: Element, lg: Element): void {
     const sh = shapeCtx(el, inheritMid), id = el.getAttribute('ID') ?? '';
     const W = num(sh, 'Width', 0), H = num(sh, 'Height', 0), m = mul(parentM, localMatrix(sh)), oneD = is1D(sh);
     const lp = num(sh, 'LinePattern', 1), fp = num(sh, 'FillPattern', 1);
@@ -104,7 +105,7 @@ function drawShape(el: Element, parentM: Mat, inheritMid: string | null, g: Elem
     const corners = [[0, 0], [W, 0], [W, H], [0, H]].map(q => ap(m, q[0], q[1]));
     const icon = !oneD && iconFor(el);
     if (icon) {
-        drawIconShape(sh, g, id, corners, icon);
+        drawIconShape(sh, g, id, corners, icon, lg);
         return;
     }
     if (!oneD) g.appendChild(svgEl('path', {
@@ -148,6 +149,7 @@ function drawShape(el: Element, parentM: Mat, inheritMid: string | null, g: Elem
             d: ds,
             fill: 'none',
             'data-sec': p.ix,
+            'data-line': oneD ? id : null,   // so a crossing connector's hop can find and rewrite this path's d
             // a line chart's lines take their series' colour, lightened by its shade like a fill (a white tick on a
             // toast); a frame or axes (no series) keep the line colour
             stroke: p.fill || !series[Number(p.ix)] ? lc
@@ -165,7 +167,8 @@ function drawShape(el: Element, parentM: Mat, inheritMid: string | null, g: Elem
             d: `M${b[0]} ${b[1]}L${e[0]} ${e[1]}`,
             stroke: lc,
             'stroke-width': lw,
-            fill: 'none'
+            fill: 'none',
+            'data-line': id
         }));
         open.push([b, e]);
         all.push(b, e);
@@ -197,7 +200,7 @@ function drawShape(el: Element, parentM: Mat, inheritMid: string | null, g: Elem
     }
     if (polys.length && el.getAttribute('Type') !== 'Group') S.polys[id] = polys;
 
-    if (el.getAttribute('Type') === 'Group') for (const c of kids(kid(el, 'Shapes'), 'Shape')) drawShape(c, m, sh.mid, g);
+    if (el.getAttribute('Type') === 'Group') for (const c of kids(kid(el, 'Shapes'), 'Shape')) drawShape(c, m, sh.mid, g, lg);
 
     const txt = num(sh, 'HideText', 0) ? '' : shapeText(sh);
     if (txt.trim()) {
@@ -224,8 +227,8 @@ function drawShape(el: Element, parentM: Mat, inheritMid: string | null, g: Elem
             const [head, ...rest] = txt.split('\n'), big = wrap(head, wpx, fs * 2, true),
                 small = rest.length ? wrap(rest.join('\n'), wpx, fs, !!(style & 1)) : [];
             const top = c[1] - (big.length * fs * 2 + small.length * fs) * 1.2 / 2;
-            drawLabel(g, big, tx, top, {fs: fs * 2, anchor, col, style: style | 1, valign: 'top'});
-            if (small.length) drawLabel(g, small, tx, top + big.length * fs * 2 * 1.2, {
+            drawLabel(lg, big, tx, top, {fs: fs * 2, anchor, col, style: style | 1, valign: 'top'});
+            if (small.length) drawLabel(lg, small, tx, top + big.length * fs * 2 * 1.2, {
                 fs,
                 anchor,
                 col,
@@ -243,7 +246,7 @@ function drawShape(el: Element, parentM: Mat, inheritMid: string | null, g: Elem
                     pc = pl.series != null ? seriesFill(pl.series, fc, colours)
                         : pl.on != null ? clearestText(shaded(seriesFill(pl.on, fc, colours), pl.onShade ?? 1))
                             : readableText(ink, PAPER);
-                drawLabel(g, wrap(p, Math.max(pl.w * scale - 4, 20), pfs, !!(style & 1)), q[0], q[1], {
+                drawLabel(lg, wrap(p, Math.max(pl.w * scale - 4, 20), pfs, !!(style & 1)), q[0], q[1], {
                     fs: pfs,
                     anchor: 'middle',
                     col: pc,
@@ -255,7 +258,7 @@ function drawShape(el: Element, parentM: Mat, inheritMid: string | null, g: Elem
             parts.forEach((p, k) => {
                 const q = ap(m, row ? cx - tw / 2 + tw * (k + 0.5) / n : cx, row ? cy : cy + th / 2 - th * (k + 0.5) / n);
                 const x = row || anchor === 'middle' ? q[0] : anchor === 'start' ? q[0] - half : q[0] + half;
-                drawLabel(g, wrap(p, row ? Math.max(wpx / n, 20) : wpx, fs, !!(style & 1)), x, q[1], {
+                drawLabel(lg, wrap(p, row ? Math.max(wpx / n, 20) : wpx, fs, !!(style & 1)), x, q[1], {
                     fs,
                     anchor: row ? 'middle' : anchor,
                     col,
@@ -264,7 +267,7 @@ function drawShape(el: Element, parentM: Mat, inheritMid: string | null, g: Elem
             });
         } else {
             const turn = own('TxtAngle') ?? 0;   // a swimlane's label reads upwards; Visio turns anticlockwise, SVG clockwise
-            const tg = Math.abs(turn) > 1e-6 ? g.appendChild(svgEl('g', {transform: `rotate(${(-turn * 180 / Math.PI).toFixed(2)} ${c[0]} ${c[1]})`})) : g;
+            const tg = Math.abs(turn) > 1e-6 ? lg.appendChild(svgEl('g', {transform: `rotate(${(-turn * 180 / Math.PI).toFixed(2)} ${c[0]} ${c[1]})`})) : lg;
             drawLabel(tg, wrap(txt, wpx, fs, !!(style & 1)), tx, c[1], {fs, anchor, col, style, halo: oneD});
         }
     }
@@ -274,15 +277,23 @@ function drawShape(el: Element, parentM: Mat, inheritMid: string | null, g: Elem
         if (b) {
             const q = ap(m, W * b.x, H * b.y), filled = fp > 0 && polys.length > 0 && !T.textOnPaper,
                 col = readableText(colour(rowV(sh, 'Character', '0', 'Color'), VISIO_DEFAULT.text), filled ? fc : PAPER);
-            drawLabel(g, [b.text], q[0], q[1], {fs: Math.max(7 / 72 * PX, 4), anchor: 'middle', col});
+            drawLabel(lg, [b.text], q[0], q[1], {fs: Math.max(7 / 72 * PX, 4), anchor: 'middle', col});
         }
     }
 }
 
-/* Wrapped lines of text. valign 'middle' centres the block on y; 'top' hangs it just below y. */
+/* Wrapped lines of text. valign 'middle' centres the block on y; 'top' hangs it just below y. A halo (a connection's
+   own label) gets a solid backdrop sized to the whole block, not just a stroke round each glyph: a stroke leaves
+   the line showing through the gaps between words, which a block-sized backdrop doesn't. */
 function drawLabel(g: Element, lines: string[], tx: number, y: number,
                    {fs, anchor = 'middle', col, style = 0, halo = false, valign = 'middle'}: LabelStyle): void {
-    const lh = fs * 1.2, first = valign === 'top' ? fs : -(lines.length - 1) * lh / 2 + fs * 0.35;
+    const lh = fs * 1.2, first = valign === 'top' ? fs : -(lines.length - 1) * lh / 2 + fs * 0.35, bold = !!(style & 1);
+    if (halo && lines.length) {
+        const maxW = Math.max(...lines.map(ln => textWidth(ln, fs, bold))), padX = 4, padY = 2, blockH = lines.length * lh,
+            rectY = (valign === 'top' ? y : y - blockH / 2) - padY,
+            rectX = (anchor === 'start' ? tx : anchor === 'end' ? tx - maxW : tx - maxW / 2) - padX;
+        g.appendChild(svgEl('rect', {x: rectX, y: rectY, width: maxW + padX * 2, height: blockH + padY * 2, rx: 3, fill: PAPER}));
+    }
     const t = svgEl('text', {
         x: tx,
         y,
@@ -290,11 +301,10 @@ function drawLabel(g: Element, lines: string[], tx: number, y: number,
         'text-anchor': anchor,
         fill: col,
         'font-family': FONT,
-        'font-weight': style & 1 ? 'bold' : null,
+        'font-weight': bold ? 'bold' : null,
         'font-style': style & 2 ? 'italic' : null,
         'text-decoration': style & 4 ? 'underline' : null
     });
-    if (halo) t.setAttribute('style', `paint-order:stroke;stroke:${PAPER};stroke-width:4px;stroke-linejoin:round`);
     lines.forEach((ln, i) => {
         const ts = svgEl('tspan', {x: tx, dy: i === 0 ? first : lh});
         ts.textContent = ln;
@@ -304,7 +314,7 @@ function drawLabel(g: Element, lines: string[], tx: number, y: number,
 }
 
 /* A shape shown as a picture kept from an import (a Visio icon), with its label underneath as Visio draws it */
-function drawIconShape(sh: VisioShape, g: Element, id: string, corners: Pt[], href: string): void {
+function drawIconShape(sh: VisioShape, g: Element, id: string, corners: Pt[], href: string, lg: Element): void {
     const xs = corners.map(q => q[0]), ys = corners.map(q => q[1]),
         b: Box = {x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys)};
     g.appendChild(svgEl('path', {
@@ -325,7 +335,7 @@ function drawIconShape(sh: VisioShape, g: Element, id: string, corners: Pt[], hr
     const size = parseFloat(rowV(sh, 'Character', '0', 'Size') ?? ''),
         fs = Math.max((isFinite(size) ? size : 0.1389) * PX, 4);
     const col = readableText(colour(rowV(sh, 'Character', '0', 'Color'), DEF.text), PAPER);
-    drawLabel(g, wrap(txt, Math.max(b.x1 - b.x0 + 40, 120), fs), (b.x0 + b.x1) / 2, b.y1 + 2, {fs, col, valign: 'top'});
+    drawLabel(lg, wrap(txt, Math.max(b.x1 - b.x0 + 40, 120), fs), (b.x0 + b.x1) / 2, b.y1 + 2, {fs, col, valign: 'top'});
 }
 
 /* Paint order: shapes as they come in the file, and each line just above the later of the shapes it joins. A line
@@ -356,6 +366,65 @@ function paintOrder(doc: Document, top: Element[]): Element[] {
         (i < 0 ? bottom : above[i]).push(el);
     }
     return [...bottom, ...shapes.flatMap((el, i) => [el, ...above[i]])];
+}
+
+/* ---------- crossing hops: a line dips a few px where it crosses another, so two unrelated lines never read as
+   joined. Only a true right-angle crossing counts, well clear of either line's ends (which would be a normal bend
+   or glue point, not a crossing); of the two, the one that comes first in the file gets the dip. */
+const HOP_GAP = 5, HOP_RISE = 6;
+type Seg = { a: Pt, b: Pt, horiz: boolean };
+const segsOf = (pts: Pt[]): Seg[] => pts.slice(1).map((b, i) => ({a: pts[i], b, horiz: Math.abs(pts[i][1] - b[1]) < 0.5}));
+
+function crossingHops(ids: string[]): Map<string, Pt[]> {
+    const out = new Map<string, Pt[]>(), pad = HOP_GAP + 2;
+    for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) {
+        const A = S.lines[ids[i]]?.[0], B = S.lines[ids[j]]?.[0];
+        if (!A || A.length < 2 || !B || B.length < 2) continue;
+        for (const sa of segsOf(A)) for (const sb of segsOf(B)) {
+            if (sa.horiz === sb.horiz) continue;   // only a crossing at right angles counts, not a parallel run
+            const h = sa.horiz ? sa : sb, v = sa.horiz ? sb : sa, x = v.a[0], y = h.a[1],
+                hx0 = Math.min(h.a[0], h.b[0]), hx1 = Math.max(h.a[0], h.b[0]),
+                vy0 = Math.min(v.a[1], v.b[1]), vy1 = Math.max(v.a[1], v.b[1]);
+            if (x <= hx0 + pad || x >= hx1 - pad || y <= vy0 + pad || y >= vy1 - pad) continue;
+            const at = out.get(ids[i]) || [];
+            at.push([x, y]);
+            out.set(ids[i], at);
+        }
+    }
+    return out;
+}
+
+/* pts with a small bump (a gap either side and a shallow curve over it) at each point in hops that falls on one
+   of its segments; hops elsewhere (or a point not meeting the gap either side of it) are left alone */
+function hoppedPath(pts: Pt[], hops: Pt[]): string {
+    let d = `M${pts[0][0].toFixed(2)} ${pts[0][1].toFixed(2)}`;
+    for (let i = 1; i < pts.length; i++) {
+        const a = pts[i - 1], b = pts[i], horiz = Math.abs(a[1] - b[1]) < 0.5, dir = Math.sign((horiz ? b[0] - a[0] : b[1] - a[1]) || 1);
+        const onSeg = hops
+            .filter(h => horiz
+                ? Math.abs(h[1] - a[1]) < 0.5 && h[0] > Math.min(a[0], b[0]) + HOP_GAP && h[0] < Math.max(a[0], b[0]) - HOP_GAP
+                : Math.abs(h[0] - a[0]) < 0.5 && h[1] > Math.min(a[1], b[1]) + HOP_GAP && h[1] < Math.max(a[1], b[1]) - HOP_GAP)
+            .sort((p, q) => horiz ? (p[0] - q[0]) * dir : (p[1] - q[1]) * dir);
+        for (const h of onSeg) {
+            const before: Pt = horiz ? [h[0] - HOP_GAP * dir, h[1]] : [h[0], h[1] - HOP_GAP * dir],
+                after: Pt = horiz ? [h[0] + HOP_GAP * dir, h[1]] : [h[0], h[1] + HOP_GAP * dir],
+                ctrl: Pt = horiz ? [h[0], h[1] - HOP_RISE] : [h[0] - HOP_RISE, h[1]];
+            d += `L${before[0].toFixed(2)} ${before[1].toFixed(2)}Q${ctrl[0].toFixed(2)} ${ctrl[1].toFixed(2)} ${after[0].toFixed(2)} ${after[1].toFixed(2)}`;
+        }
+        d += `L${b[0].toFixed(2)} ${b[1].toFixed(2)}`;
+    }
+    return d;
+}
+
+/* Finds every connector's line path by the data-line id set when it was drawn, and rewrites it to dip round
+   whatever else crosses it */
+function applyHops(layer: Element): void {
+    const hops = crossingHops(Object.keys(S.lines));
+    for (const [id, pts] of hops) {
+        if (!pts.length) continue;
+        const path = layer.querySelector(`path[data-line="${CSS.escape(id)}"]`), line = S.lines[id]?.[0];
+        if (path && line && line.length > 1) path.setAttribute('d', hoppedPath(line, pts));
+    }
 }
 
 const iconFor = (el: Element): string | null => {
@@ -401,19 +470,28 @@ export function render(): void {
     const base: Mat = [PX, 0, 0, -PX, 0, ph];   // page inches (y up) to page pixels (y down)
     const top = kids(kid(pg.doc.documentElement, 'Shapes'), 'Shape');
     const defs = layer.appendChild(svgEl('defs', {})), clips = new Map<Element, string>();
+    // every shape's text is drawn into its own group here, but all these groups are only added to the layer
+    // (on top of every shape and line) once the loop is done, so a line can never paint over a label
+    const labels = svgEl('g', {id: 'labels'});
     for (const el of paintOrder(pg.doc, top)) {
         const id = el.getAttribute('ID') ?? '', g = svgEl('g', {'data-id': id, 'data-kind': roleOf(el) || ''});
         layer.appendChild(g);   // data-kind lets the CSS style a kind (the video's play button)
+        const lg = labels.appendChild(svgEl('g', {'data-id': id}));
         try {
-            drawShape(el, base, null, g);
+            drawShape(el, base, null, g, lg);
         } catch (err) {
             console.warn('Could not draw shape', id, err);
         }
         // a shape in a scroll area is cut off at its edges; containers paint first, so the area's clip is ready
         const within = !is1D(shapeCtx(el, null)) ? scrollOf(el, top) : null, clip = within && clips.get(within);
-        if (clip) g.setAttribute('clip-path', `url(#${clip})`);
+        if (clip) {
+            g.setAttribute('clip-path', `url(#${clip})`);
+            lg.setAttribute('clip-path', `url(#${clip})`);
+        }
         if (isScroll(el) && S.boxes[id]) clips.set(el, scrollClip(defs, el, S.boxes[id], clip || null));
     }
+    applyHops(layer);
+    layer.appendChild(labels);
     syncSelection();
     if (S.hover && !S.elById[S.hover]) S.hover = null;
     drawHover();
