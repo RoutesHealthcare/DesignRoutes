@@ -23,8 +23,6 @@ import {commitText} from './text-editor';
 import {drawHover} from './pointer';
 import {drawMarker, markerOf, userV} from './flow/model';
 import {routePoints} from './connectors';
-import {addPage} from './visio-io';
-import {refreshEditor} from './text-pane';
 import {CONTAINER, SHAPES, cellValues, coloursOf, isShapeKind, roleOf, segmentsOf, seriesFill, shaded} from '../shapes';
 import type {Page} from './page';
 import {depthOf, isContainer, isScroll, scrollOf} from './containers';
@@ -614,32 +612,6 @@ export function zoomAt(f: number, cx: number, cy: number): void {
     S.panY = cy - (cy - S.panY) * nz / S.zoom;
     S.zoom = nz;
     applyView();
-}
-
-export function renderTabs(): void {
-    const t = $('tabs');
-    t.replaceChildren();
-    S.pages.forEach((p, i) => {
-        const b = document.createElement('button');
-        b.textContent = p.name + (p.bg ? ' (background)' : '');
-        b.setAttribute('aria-selected', String(i === S.pi));
-        b.onclick = () => {
-            if (S.editing) commitText();
-            S.pi = i;
-            S.sel = null;
-            renderTabs();
-            render();
-            fit();
-            refreshEditor();
-        };
-        t.appendChild(b);
-    });
-    const add = document.createElement('button');
-    add.textContent = '+';
-    add.title = 'Add a page';
-    add.setAttribute('aria-label', 'Add a page');
-    add.onclick = addPage;
-    t.appendChild(add);
 }
 
 export function updateTitle(): void {

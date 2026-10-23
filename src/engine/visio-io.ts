@@ -456,6 +456,19 @@ export function deletePage(pi: number): boolean {
     return true;
 }
 
+/* What both the Page panel's "Delete this page" and a tab's close button do: refuse (with a toast) on the last
+   page, otherwise confirm by name before deletePage() removes it. pi is the page being deleted, not necessarily
+   the current one - a tab's close button can target a page that isn't selected. */
+export function requestDeletePage(pi: number): void {
+    if (S.pages.length <= 1) {
+        toast('The last page cannot be deleted.');
+        return;
+    }
+    const name = S.pages[pi]?.name ?? '';
+    if (!confirm(`Delete "${name}"? Undo will bring it back.`)) return;
+    deletePage(pi);
+}
+
 /* Shrinks the current page's explicit size down to whatever is actually on it, with the same margin new content
    gets placed with. Nothing is moved or resized; buildModel still grows the page back if that is ever not enough.
    Returns false when there is nothing on the page to fit to. */

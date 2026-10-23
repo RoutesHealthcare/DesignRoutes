@@ -667,6 +667,39 @@ button:disabled {
   font-weight: 600;
 }
 
+.tabs .tab {
+  display: flex;
+  align-items: stretch;
+}
+
+.tab-name-edit {
+  height: auto;
+  min-width: 60px;
+  padding: 0 10px;
+  border: none;
+  border-top: 2px solid var(--accent);
+  border-radius: 0;
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.tab-close {
+  padding: 0 6px;
+  min-width: auto;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--muted);
+}
+
+.tab-close:hover:not(:disabled) {
+  color: var(--danger);
+}
+
+.tab-close:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
 /* ---------- text pane ---------- */
 .textpane {
   grid-area: text;

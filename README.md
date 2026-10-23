@@ -392,6 +392,10 @@ With nothing selected, the Page panel renames the page, sets an explicit width a
 to whatever is actually on the page, with the same margin new content is placed with. Delete this page removes
 the page outright (not just its content); the last remaining page cannot be deleted.
 
+A page's tab, at the bottom, offers the same two things directly: double-click it to rename it in place, or use
+its own close button to delete it (disabled, like Delete this page, on the last remaining page). More tabs than
+fit in the bar just scroll.
+
 Choosing a size smaller than what is already on the page never moves, resizes, or deletes anything: the page
 itself stays at the size chosen, and whatever reaches past it is shown on a light grey background rather than
 being forced to fit. A page with no explicit size still grows with its content, as a floor of A4 landscape. PNG

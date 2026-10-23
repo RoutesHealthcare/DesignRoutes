@@ -1,7 +1,7 @@
 /* ---------- document state, undo and rebuild ---------- */
 import {S, kid, kids, toast} from './core';
 import {is1D, shapeCtx} from './visio-package';
-import {fit, pageCtx, render, renderTabs, updateTitle} from './render';
+import {fit, pageCtx, render, updateTitle} from './render';
 import {selIds} from './selection';
 import {commitText} from './text-editor';
 import {plural} from './formats/export';
@@ -58,7 +58,6 @@ export function rebuild(memo: SelMemo[] | null, sync?: SyncResult): boolean {
     TP.notes = ast.notes;
     buildModel(ast);
     reselect(memo, sync);
-    renderTabs();
     render();
     refreshEditor();
     notify();
@@ -114,6 +113,16 @@ function restore(from: UndoEntry[], to: UndoEntry[]): void {
     S.pi = u.pi;
     setDirty(true);
     rebuild(selMemo());
+}
+
+/* What clicking a page tab does: commit any in-progress shape text first, since it belongs to the page being left */
+export function switchPage(pi: number): void {
+    if (S.editing) commitText();
+    S.pi = pi;
+    S.sel = null;
+    render();
+    fit();
+    refreshEditor();
 }
 
 export const undo = (): void => {

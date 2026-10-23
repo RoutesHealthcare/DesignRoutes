@@ -1,7 +1,7 @@
 /* ---------- the text pane: a tab that can be hidden, opened over the canvas, or pinned beside it ---------- */
 import {$, S, kid, kids, svg, toast} from './core';
 import {is1D, shapeCtx} from './visio-package';
-import {applyView, pageCtx, render, renderTabs} from './render';
+import {applyView, pageCtx, render} from './render';
 import {select} from './selection';
 import {EXPORTERS, FMT, exportIds, pageGraph, plural, type Format} from './formats/export';
 import {IMPORTERS} from './formats/import';
@@ -342,7 +342,6 @@ function selectFromCaret(): void {
         if (!d && !e && !k) return;
         if (pi !== S.pi) {
             S.pi = pi;
-            renderTabs();
             render();
         }
         const top = kids(kid(pageCtx().doc.documentElement, 'Shapes'), 'Shape');
