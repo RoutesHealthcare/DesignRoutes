@@ -147,8 +147,14 @@ Where the code is against principle 3 (a component owns its piece of the screen)
   switching (`switchPage`), renaming in place (double-click, `renamePage`) and deleting (`requestDeletePage`),
   shared with the Page panel's own Name field and Delete button.
 - [x] **Props.** Split into `PageProps`, `ShapeProps`, `ConnectionProps` and `MultiProps`, dispatched by `Props.tsx`.
-- [ ] **DiagramTextEditor.** Pin, Hide and the language choice go first. The editor itself (gutter, highlighting,
-  suggestions) can stay an engine piece inside, like the canvas.
+- [x] **DiagramTextEditor.** `#textPane`'s `hidden`/`floating`, the language `<select>` (controlled, `value={TP.mode}`),
+  and Pin/Hide/Apply/Revert all read/write `TP` directly and own their own `onClick`/`onChange`
+  (`setPane`/`setLanguage`/`applyForeign`/`revertEditor`, all exported from `text-pane.ts`); `TextEditorAction.tsx`
+  is gone (its four buttons stopped being a uniform list once each needed its own dynamic hidden/disabled/label).
+  `refreshEditor()` now `notify()`s once at the end instead of writing Apply/Revert's DOM state. The editor itself
+  (gutter, highlighting, suggestions, the status line) stays an engine piece inside, as planned - `codeText`,
+  `codeHl`, `codeGutter` and `tpStatus` are still plain DOM nodes `text-pane.ts` writes into directly, same as the
+  canvas.
 - [x] **Tour.** Store-driven (`getStep`/`getTourStep` via `useSyncExternalStore`), owns `tourEnd`/`tourNext`
   directly. `tutorial.ts`'s `init()` only wires step-progress watching (a `MutationObserver` plus
   pointerup/keyup/focusout); `highlight()`/`place()` touch elements outside Tour's own tree to point the card at
