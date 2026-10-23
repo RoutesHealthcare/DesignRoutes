@@ -149,7 +149,18 @@ Where the code is against principle 3 (a component owns its piece of the screen)
 - [x] **Props.** Split into `PageProps`, `ShapeProps`, `ConnectionProps` and `MultiProps`, dispatched by `Props.tsx`.
 - [ ] **DiagramTextEditor.** Pin, Hide and the language choice go first. The editor itself (gutter, highlighting,
   suggestions) can stay an engine piece inside, like the canvas.
-- [ ] **Export and import dialogs, Tour, Notify, ShowDiagram.** Each owns its buttons; the toast becomes a store.
+- [x] **Tour.** Store-driven (`getStep`/`getTourStep` via `useSyncExternalStore`), owns `tourEnd`/`tourNext`
+  directly. `tutorial.ts`'s `init()` only wires step-progress watching (a `MutationObserver` plus
+  pointerup/keyup/focusout); `highlight()`/`place()` touch elements outside Tour's own tree to point the card at
+  them, the same as Stage's canvas (principle 4).
+- [ ] **Export and import dialogs.** Close/Cancel/Import/Copy/Download already have `onClick`. Left: `dialogs.ts`'s
+  `init()` still builds the format `<select>`s' options with `appendChild(new Option(...))` and wires
+  `exportFmt.onchange`/`importFile.onclick` outside React.
+- [x] **Notify.** `toast()` in `core.ts` now writes a tiny dedicated store (message + visible, next to the
+  listeners it serves, the same pattern as the tool store in `palette.ts`) instead of the DOM; `Notify.tsx` reads
+  it via `useSyncExternalStore`. The div stays mounted while hidden (message and all) so the CSS fade on `.show`
+  still has something under it, exactly as when `toast()` wrote the DOM directly.
+- [ ] **ShowDiagram.** An empty `#textTab` button; shown/hidden and wired from `text-pane.ts`.
 - [ ] When `main.ts`'s `init()` list is empty, delete it and load the engine directly from `App.tsx`.
 
 The recipe for each one is the one used for Palette: move each `$('id').onclick` onto its JSX element, add a small
