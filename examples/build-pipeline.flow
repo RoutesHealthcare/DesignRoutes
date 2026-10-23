@@ -4,7 +4,7 @@ flow 1
 # and a couple of branches in the .flow format. Nothing here is specific to any
 # particular project -- it is just a stand-in CI/build process to show the shapes off.
 
-page "Build pipeline" size 443x82 direction LR
+page "Build pipeline" size 448x105 direction LR
 
 start: terminator "npm run build" @ 10,8.8
 install: process "Install dependencies" @ 60,7.5
@@ -16,6 +16,7 @@ fail: terminator "Build fails" @ 232.5,38.8
 test: process "Run test suite" @ 285,7.4
 bundle: process "Bundle and minify" @ 337.5,7.4
 done: terminator "dist/ written" @ 390,8.8
+about: text "The pipeline begins when someone runs npm run build." @ 10,72 423x18
 
 start -> install
 install -> cache_hit
@@ -27,3 +28,45 @@ lint_pass -> test : "yes"
 lint_pass -> fail : "no"
 test -> bundle
 bundle -> done
+
+# A simple step-by-step walk-through of the happy path, lighting up each stage in turn (references/animation.md).
+@animation start
+step 1
+   $start [fill=#FFE38A stroke=#E69138]
+   $about "The pipeline begins when someone runs npm run build."
+step 2
+   $start [fill=#FFFFFF stroke=#2B3A47]
+   $install [fill=#FFE38A stroke=#E69138]
+   $about "Dependencies are installed first."
+step 3
+   $install [fill=#FFFFFF stroke=#2B3A47]
+   $cache_hit [fill=#FFE38A stroke=#E69138]
+   $about "It checks whether the lockfile has changed since the last run."
+step 4
+   $cache_hit [fill=#FFFFFF stroke=#2B3A47]
+   $restore_cache [fill=#FFE38A stroke=#E69138]
+   $about "Unchanged, so node_modules is restored from cache instead of reinstalling."
+step 5
+   $restore_cache [fill=#FFFFFF stroke=#2B3A47]
+   $lint [fill=#FFE38A stroke=#E69138]
+   $about "With dependencies ready, the linter runs."
+step 6
+   $lint [fill=#FFFFFF stroke=#2B3A47]
+   $lint_pass [fill=#FFE38A stroke=#E69138]
+   $about "A pass moves on to testing; a fail stops the build here."
+step 7
+   $lint_pass [fill=#FFFFFF stroke=#2B3A47]
+   $test [fill=#FFE38A stroke=#E69138]
+   $about "The test suite runs next."
+step 8
+   $test [fill=#FFFFFF stroke=#2B3A47]
+   $bundle [fill=#FFE38A stroke=#E69138]
+   $about "Passing tests trigger the production bundle and minify step."
+step 9
+   $bundle [fill=#FFFFFF stroke=#2B3A47]
+   $done [fill=#FFE38A stroke=#E69138]
+   $about "The build finishes with dist/ written to disk."
+step 10
+   $done [fill=#FFFFFF stroke=#2B3A47]
+   $about "npm run build: install, check the cache, lint, test, bundle - and write dist/."
+@animation end
