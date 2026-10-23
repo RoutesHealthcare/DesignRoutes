@@ -65,7 +65,7 @@ And as built, with the text pane pinned and a shape selected:
 | 3 | Stage      | The page on its grid. Select, marquee-select, move, resize, connect, and edit text in place. Drop a picture or a file onto it.                        | `Stage.tsx` (with `render.ts` and `pointer.ts` inside) |
 | 4 | Text pane  | The page as text, live in both directions, with suggestions as you type. Can also show Mermaid, PlantUML or DOT. Pin keeps it open beside the canvas. | `DiagramTextEditor.tsx`                                |
 | 5 | Properties | The page when nothing is selected (name, size, connections, key, shortcuts). Otherwise the selection (screen 3).                                      | `Props.tsx`                                            |
-| 6 | Page tabs  | One tab per page; + adds a page.                                                                                                                      | `PageTabs.tsx`                                         |
+| 6 | Page tabs  | One tab per page; double-click a tab to rename it in place, its own close button to delete it (disabled on the last page); + adds a page. Overspill scrolls. | `PageTabs.tsx`                                         |
 | 7 | Toast      | A short confirmation that fades by itself.                                                                                                            | `Notify.tsx`                                           |
 
 ### 2 Dialogs and tour
@@ -141,9 +141,11 @@ Where the code is against principle 3 (a component owns its piece of the screen)
 - [x] **Palette.** Draws from `PALETTE` and owns its click, drag and Connect toggle; the tool is a store.
 - [x] **Stage.** Owns dropping shapes, pictures and files. The canvas inside stays with the engine (principle 4).
 - [x] **Shapes.** One `ShapeDef` per shape, with its palette entry; `paletteShapes.ts` is gone.
-- [ ] **Toolbar.** Move the `btn*` handlers out of `hot-keys.ts`. Undo and Redo will want a store to show when they're
-  available. The keyboard shortcuts can stay in `hot-keys.ts`.
-- [ ] **PageTabs.** Draw the tabs from a pages store instead of building them in JS.
+- [x] **Toolbar.** Owns every `onClick` directly; Undo/Redo/zoom/name/dirty/steps read from stores via
+  `useSyncExternalStore`. `hot-keys.ts`'s `init()` is keyboard shortcuts only now.
+- [x] **PageTabs.** Draws from `S.pages`/`S.pi` directly (subscribed via the version counter, like Props); owns
+  switching (`switchPage`), renaming in place (double-click, `renamePage`) and deleting (`requestDeletePage`),
+  shared with the Page panel's own Name field and Delete button.
 - [x] **Props.** Split into `PageProps`, `ShapeProps`, `ConnectionProps` and `MultiProps`, dispatched by `Props.tsx`.
 - [ ] **DiagramTextEditor.** Pin, Hide and the language choice go first. The editor itself (gutter, highlighting,
   suggestions) can stay an engine piece inside, like the canvas.

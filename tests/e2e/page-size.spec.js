@@ -109,17 +109,53 @@ test('a page can be renamed from the Page panel, and the tab follows', async ({a
     expect(await app.flowText()).toMatch(/^page "Renamed page"/m);
 });
 
+test('double-clicking a tab renames the page in place, and the Page panel follows', async ({app, page}) => {
+    const tab = page.locator('#tabs button').first();
+    await tab.dblclick();
+    const edit = page.locator('#tabs input[aria-label="Page name"]');
+    await expect(edit).toBeFocused();
+    // the selected text (autoselected on entering edit mode) must clear on the first keystroke, and every
+    // keystroke after that must append rather than re-select-and-overwrite the lot - pressSequentially types
+    // one key at a time and re-renders between them, unlike fill(), which sets the whole value in one go
+    await edit.pressSequentially('Renamed via tab');
+    await edit.press('Enter');
+    await expect(tab).toHaveText('Renamed via tab');
+    await expect(page.locator('#pPageName')).toHaveValue('Renamed via tab');
+    expect(await app.flowText()).toMatch(/^page "Renamed via tab"/m);
+});
+
+test('Escape cancels a tab rename without changing the page', async ({app, page}) => {
+    const tab = page.locator('#tabs button').first();
+    const before = await tab.textContent();
+    await tab.dblclick();
+    await page.locator('#tabs input[aria-label="Page name"]').fill('Discard me');
+    await page.keyboard.press('Escape');
+    await expect(tab).toHaveText(before);
+    expect(await app.flowText()).not.toContain('Discard me');
+});
+
 test('a page can be deleted from the Page panel, and the last page cannot', async ({app, page}) => {
     await page.getByRole('button', {name: 'Add a page'}).click();
-    await expect(page.locator('#tabs button')).toHaveCount(3);   // Connection types, Page-1, +
+    // each page's tab is a name button plus a close button: Connection types (x2), Page-1 (x2), +
+    await expect(page.locator('#tabs button')).toHaveCount(5);
     await app.nothingSelected();
     page.once('dialog', d => d.accept());
     await page.click('#pDeletePage');
-    await expect(page.locator('#tabs button')).toHaveCount(2);
+    await expect(page.locator('#tabs button')).toHaveCount(3);   // Connection types (x2), +
     await expect(page.locator('#tabs button').first()).toHaveText('Connection types');
 
-    // one page left: Delete this page is disabled, and clicking it (were it not) would refuse anyway
+    // one page left: Delete this page, and the tab's own close button, are both disabled
     await expect(page.locator('#pDeletePage')).toBeDisabled();
+    await expect(page.locator('#tabs .tab-close')).toBeDisabled();
+});
+
+test('a page can be deleted from its own tab, by name, and refuses the last page the same way', async ({app, page}) => {
+    await page.getByRole('button', {name: 'Add a page'}).click();
+    await expect(page.locator('#tabs .tab-close')).toHaveCount(2);
+    page.once('dialog', d => d.accept());
+    await page.getByRole('button', {name: 'Delete page "Page-1"'}).click();
+    await expect(page.locator('#tabs button')).toHaveCount(3);   // Connection types (x2), +
+    await expect(page.locator('#tabs .tab-close')).toBeDisabled();
 });
 
 test('dragging a shape past the page edge grows the page to fit it', async ({app, page}) => {

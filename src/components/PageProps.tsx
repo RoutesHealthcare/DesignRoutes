@@ -3,7 +3,7 @@ import {subscribe, getVersion} from "../engine/store";
 import {S, toast} from "../engine/core";
 import {hotKeysList} from "../engine/hot-keys";
 import {getPageSizeNameFormat, pageSizeDictionary} from "../engine/page";
-import {pageSizeMM, setPageSize, deletePage, fitPageToContent, renamePage} from "../engine/visio-io";
+import {pageSizeMM, setPageSize, requestDeletePage, fitPageToContent, renamePage} from "../engine/visio-io";
 import {pageView} from "../engine/properties";
 import {setNewConnType, toggleKey, type ConnType} from "../engine/connection-props";
 import {connTypeOptions} from "./ConnectionProps";
@@ -71,14 +71,8 @@ export function PageProps() {
                 preset above) for a floor to export or print to, or use Fit page to content to shrink it to
                 whatever is already there.</p>
             <div className="btns one">
-                <button id="pDeletePage" className="danger" disabled={pv?.deleteDisabled} onClick={() => {
-                    if (S.pages.length <= 1) {
-                        toast('The last page cannot be deleted.');
-                        return;
-                    }
-                    if (!confirm(`Delete "${pv?.name}"? Undo will bring it back.`)) return;
-                    deletePage(S.pi);
-                }}>Delete this page</button>
+                <button id="pDeletePage" className="danger" disabled={pv?.deleteDisabled}
+                        onClick={() => requestDeletePage(S.pi)}>Delete this page</button>
             </div>
             <h2>Getting started</h2>
             <p>Drag a shape onto the page, or click one to drop it in the middle. To edit a shape's text, click
