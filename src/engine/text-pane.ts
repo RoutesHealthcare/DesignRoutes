@@ -1,5 +1,6 @@
 /* ---------- the text pane: a tab that can be hidden, opened over the canvas, or pinned beside it ---------- */
 import {$, S, kid, kids, svg, toast} from './core';
+import {notify} from './store';
 import {is1D, shapeCtx} from './visio-package';
 import {applyView, pageCtx, render} from './render';
 import {select} from './selection';
@@ -62,7 +63,6 @@ export function setPane(open: boolean, pinned: boolean): void {
     TP.pinned = pinned;
     const $textPane = $('textPane');
     $textPane.hidden = !open;
-    $('textTab').hidden = open;
     document.body.classList.toggle('tp-pinned', open && pinned);
     $textPane.classList.toggle('floating', open && !pinned);
     const $tpPin = $('tpPin');
@@ -71,6 +71,7 @@ export function setPane(open: boolean, pinned: boolean): void {
     storePane();
     if (open) refreshEditor(true);
     applyView();
+    notify();   // so ShowDiagram.tsx's hidden={TP.open} (and anything else watching TP) re-syncs
 }
 
 let FLOW_KW: RegExp, KIND_RE: RegExp;
@@ -417,7 +418,6 @@ export function init(): void {
     };
     $('tpPin').onclick = () => setPane(true, !TP.pinned);
     $('tpClose').onclick = () => setPane(false, TP.pinned);
-    $('textTab').onclick = () => setPane(true, TP.pinned);
     svg.addEventListener('pointerdown', () => {
         if (TP.open && !TP.pinned) setPane(false, false);
     }, true);

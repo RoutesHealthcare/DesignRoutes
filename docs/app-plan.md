@@ -160,7 +160,10 @@ Where the code is against principle 3 (a component owns its piece of the screen)
   listeners it serves, the same pattern as the tool store in `palette.ts`) instead of the DOM; `Notify.tsx` reads
   it via `useSyncExternalStore`. The div stays mounted while hidden (message and all) so the CSS fade on `.show`
   still has something under it, exactly as when `toast()` wrote the DOM directly.
-- [ ] **ShowDiagram.** An empty `#textTab` button; shown/hidden and wired from `text-pane.ts`.
+- [x] **ShowDiagram.** Owns `onClick` (`setPane(true, TP.pinned)`) and `hidden={TP.open}` directly. `setPane()`
+  now `notify()`s on every change (from here, Ctrl+E and the pane's own Pin/Close), which is also how this stays
+  in sync regardless of which of those opened or closed it. The rest of the pane (`#textPane` itself, Pin, Close,
+  resize, language select) is still wired imperatively in `text-pane.ts` - that's `DiagramTextEditor`'s half.
 - [ ] When `main.ts`'s `init()` list is empty, delete it and load the engine directly from `App.tsx`.
 
 The recipe for each one is the one used for Palette: move each `$('id').onclick` onto its JSX element, add a small
