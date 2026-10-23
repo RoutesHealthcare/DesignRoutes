@@ -105,13 +105,29 @@ export const snapIn=(v : number)=>{
     const g=2.5*MM;
     return Math.round(v/g)*g;
 };
+/* A short confirmation message, shown and faded by Notify.tsx. The message itself (toastMsg) is kept even once
+   hidden: the fade is a CSS transition on the "show" class, not a mount/unmount, so the old text must stay put
+   under it, the same as when toast() wrote the DOM directly. */
 let toastTimer : ReturnType<typeof setTimeout> | undefined;
+let toastMsg='', toastVisible=false;
+const toastListeners=new Set<()=>void>();
+
+export function subscribeToast(listener : ()=>void){
+    toastListeners.add(listener);
+    return ()=>{ toastListeners.delete(listener); };
+}
+export const getToastMsg=()=>toastMsg;
+export const getToastVisible=()=>toastVisible;
+
 export function toast(msg : string, ms : number=4500){
-    const t=$('toast');
-    t.textContent=msg;
-    t.classList.add('show');
+    toastMsg=msg;
+    toastVisible=true;
+    toastListeners.forEach(l=>l());
     clearTimeout(toastTimer);
-    toastTimer=setTimeout(()=>t.classList.remove('show'),ms);
+    toastTimer=setTimeout(()=>{
+        toastVisible=false;
+        toastListeners.forEach(l=>l());
+    },ms);
 }
 /* A name typed by someone, or a page name, made safe to use as a file name on Windows, macOS and Linux alike */
 export const safeFileName=(s : unknown)=> {
