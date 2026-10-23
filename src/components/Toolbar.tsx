@@ -1,7 +1,7 @@
 ﻿import {S} from "../engine/core";
 import {fit, zoomCentre} from "../engine/render";
 import {newDoc, redo, undo} from "../engine/document";
-import {openFile, save} from "../engine/visio-io";
+import {openAny, openFile, save} from "../engine/visio-io";
 import {useSyncExternalStore} from "react";
 import {subscribe} from "../engine/store";
 import {openExport, openImport} from "../engine/dialogs";
@@ -69,7 +69,12 @@ export function Toolbar() {
             <span className="grow"></span>
             <span id="fileName" className="file-name">{name}{dirty && ' (unsaved changes)'}</span>
             <input type="file" id="fileInput"
-                   accept=".flow,.mmd,.mermaid,.puml,.plantuml,.pu,.dot,.gv,.drawio,.xml,.md,.txt" hidden/>
+                   accept=".flow,.mmd,.mermaid,.puml,.plantuml,.pu,.dot,.gv,.drawio,.xml,.md,.txt" hidden
+                   onChange={async e => {
+                       const f = e.target.files?.[0];
+                       e.target.value = '';
+                       if (f) await openAny(f, null);
+                   }}/>
         </header>
     )
 }

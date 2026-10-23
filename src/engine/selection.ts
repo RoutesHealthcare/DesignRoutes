@@ -8,7 +8,7 @@ import {drawOverlay, pageCtx, render} from './render';
 import {connectsEl, listConnects, refreshConnector, refreshForMany, setGlue} from './connectors';
 import {nextId, roleOf} from '../shapes';
 import {drawHover} from './pointer';
-import {updateProps} from './properties';
+import {syncCurLine} from './text-pane';
 import {delUser, userV} from './flow/model';
 import {commit} from './document';
 import {withMembers} from './containers';
@@ -32,7 +32,7 @@ function setSelection(ids: string[], primary: string | null) {
     S.selection = new Set(ids.filter(id => S.elById[id]));
     S.sel = primary != null && S.selection.has(primary) ? primary : (selIds()[0] ?? null);
     drawOverlay();
-    updateProps();
+    syncCurLine();
     drawHover();
     notify();
 }

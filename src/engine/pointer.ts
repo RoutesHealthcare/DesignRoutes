@@ -19,7 +19,7 @@ import {
 import {addConnector, applySize, roleOf} from '../shapes';
 import {HIT_TOL_PX, isConnector, selIds, select, toggleSelection, topLevelIds} from './selection';
 import {commitText, editText} from './text-editor';
-import {updateProps} from './properties';
+import {notify} from './store';
 import {commit, pushUndo, rebuild, selMemo, snapshot} from './document';
 import {delUser, setUser, userV} from './flow/model';
 import {containerAt, growToFit, movedRoots, setContainer, withMembers} from './containers';
@@ -364,7 +364,7 @@ export function init(): void {
             if (wasSelected) {
                 S.sel = pick;
                 drawOverlay();
-                updateProps();
+                notify();
             } else select(pick);
             const ids = withMembers(withMaps(selIds().filter(id => !isConnector(id))));   // connections follow their shapes, members their container, topics their map
             const again = wasSelected && S.selection.size === 1;   // a second click on the only selected object edits its text
@@ -468,7 +468,7 @@ export function init(): void {
         if (d.kind === 'marquee') {
             if (d.moved) {
                 drawOverlay();
-                updateProps();
+                notify();
             }
             return;
         }

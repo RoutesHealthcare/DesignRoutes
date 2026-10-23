@@ -21,7 +21,6 @@ import {ap, buildPaths, localMatrix, mul, type Mat} from './geometry';
 import {HIT_PAD_PX, HIT_TOL_PX, syncSelection} from './selection';
 import {commitText} from './text-editor';
 import {drawHover} from './pointer';
-import {updateProps} from './properties';
 import {drawMarker, markerOf, userV} from './flow/model';
 import {routePoints} from './connectors';
 import {addPage} from './visio-io';
@@ -496,8 +495,7 @@ export function render(): void {
     if (S.hover && !S.elById[S.hover]) S.hover = null;
     drawHover();
     drawOverlay();
-    updateProps();
-    updateTitle();
+    updateTitle();   // calls notify(), so every render() re-syncs React (Props, ...) too
 }
 
 export function canResize(el: Element): boolean {

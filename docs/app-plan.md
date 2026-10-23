@@ -89,7 +89,8 @@ And as built, with the text pane pinned and a shape selected:
 | 13 | Connection | Its type, route (straight or elbow), line style, the ends, the meaning shown in the page's key, and reverse. |
 | 14 | Image | Choose or change the picture. It's stored in the `.flow` text as an icon, so the file stays one file. |
 
-All three are sections of `Props.tsx`, shown according to what's selected.
+Shape is `ShapeProps.tsx`, Connection is `ConnectionProps.tsx`; `Props.tsx` just dispatches to whichever of
+`PageProps`/`MultiProps`/`ShapeProps`/`ConnectionProps` owns the current selection.
 
 ## Key flows
 
@@ -132,7 +133,6 @@ also type-checks. A change isn't done until both projects pass.
 
 - **Shape settings are colours and a few flags** (`fill`, `stroke`, `text`, `weight`, `size`, `icon`, `state`).
   There's no text alignment or "no fill" yet.
-- **No containers yet**, so shapes can't belong to a frame and move with it. This is planned in `ShapesPlan.md`.
 
 ## Migration checklist
 
@@ -144,7 +144,7 @@ Where the code is against principle 3 (a component owns its piece of the screen)
 - [ ] **Toolbar.** Move the `btn*` handlers out of `hot-keys.ts`. Undo and Redo will want a store to show when they're
   available. The keyboard shortcuts can stay in `hot-keys.ts`.
 - [ ] **PageTabs.** Draw the tabs from a pages store instead of building them in JS.
-- [ ] **Props.** The largest. Split it into `PageProps`, `ShapeProps` and `ConnectionProps`, driven by a selection store.
+- [x] **Props.** Split into `PageProps`, `ShapeProps`, `ConnectionProps` and `MultiProps`, dispatched by `Props.tsx`.
 - [ ] **DiagramTextEditor.** Pin, Hide and the language choice go first. The editor itself (gutter, highlighting,
   suggestions) can stay an engine piece inside, like the canvas.
 - [ ] **Export and import dialogs, Tour, Notify, ShowDiagram.** Each owns its buttons; the toast becomes a store.
@@ -156,8 +156,13 @@ tests, and run the type check and both test projects.
 
 ## Open questions
 
-- Should the selection and the current page become stores before Props moves? That's probably the answer, since
-  Props, the text pane and the page tabs all show them.
-- Containers: is "dropping a shape on a frame puts it inside" enough, or does the text need its own nesting?
 - Should ready-made patterns (a login form, a KPI row) be palette entries that add several shapes, or `.flow`
   snippets that get inserted?
+
+## Resolved
+
+- **Selection as a store?** No: Props subscribes to the version counter instead of reading `S.sel`/`S.selection`
+  off a store snapshot. A rebuild reassigns every shape's raw ID, so a narrower snapshot could hand
+  `ShapeProps`/`ConnectionProps` a stale, detached element. See the comment at the top of `Props.tsx`.
+- **Containers.** The text has its own nesting: a shape declares its container with `in=<id>` (see
+  "Containers" and "Flexi containers" in `docs/flow-language.md`), not just drag-and-drop on the canvas.
