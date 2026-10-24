@@ -68,7 +68,7 @@ const MEANING = {
 }
 
 const mm = inches => Math.round(inches * 25.4)
-const cell = s => String(s ?? '').replace(/\|/g, '\\|').replace(/\n/g, '\\n')
+const cell = s => String(s ?? '').replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\n/g, '\\n')
 const isPart = k => /^(table(Header|Row)|grid(Head|Cell))$/.test(k)
 
 /* What a shape does beyond drawing its label, from its definition's flags */
@@ -159,7 +159,7 @@ console.log(`Wrote shapes.md, aliases.md and examples.md to ${out}`)
    checker script, the repo's source), then the reference files as sections, their links turned into anchors. */
 const SECTIONS = {shapes: 'shape-types', aliases: 'type-aliases', examples: 'example-flows'}
 const toAnchors = md => md
-    .replace(/\[(?:references\/)?(shapes|aliases|examples)\.md\]\((?:references\/)?\1\.md\)/g, (_, f) => `[${f}](#${SECTIONS[f]})`)
+    .replace(/\[(?:references\/)?(shapes|aliases|examples)\.md]\((?:references\/)?\1\.md\)/g, (_, f) => `[${f}](#${SECTIONS[f]})`)
 /* Headings one level down, outside code fences only (a # in a .flow example is a comment), and without the
    paragraph saying where the file was generated from, which means nothing outside the repo */
 const demote = md => {
