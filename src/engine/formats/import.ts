@@ -254,7 +254,7 @@ function mermaidChain(st: string, g: ImportedGraph, map: Map<string, ImportNode>
     const arrow = (): (Ends & { label: string, invisible?: boolean }) | null => {
         ws();
         const rest = st.slice(pos);
-        let m = rest.match(/^(?:\w+@)?(<)?(--|==|-\.)\s+(.+?)\s+(-{2,}|={2,}|\.-+)(>|o|x)?(?=\s|$|[\p{L}\p{N}_"])/u);   // A -- text --> B
+        let m = rest.match(/^(?:\w+@)?(<)?(--|==|-\.)\s+(.+?)\s+(-{2,}|={2,}|\.-+)([>ox])?(?=\s|$|[\p{L}\p{N}_"])/u);   // A -- text --> B
         if (m) {
             pos += m[0].length;
             return {
@@ -305,7 +305,7 @@ function plantumlLines(src: string): string[] {
 
 /* activity steps end in ; (or another activity terminator); :Actor: shorthand in component diagrams does not */
 export const isActivityText = (src: string): boolean => /^\s*(?:start|stop|end|:[^\n]*[;|<>\/\]}]|if\s*\(.*\)\s*then\b.*|while\s*\(.*|repeat|fork|split)\s*$/im.test(plantumlLines(src).join('\n'));
-const SKIP_PU = /^(?:(?:skinparam|title|caption|header|footer|hide|show|scale|allowmixing|left to right direction|top to bottom direction|legend|endlegend|together|newpage|left header|right header|center header|end note|endnote)\b|!|\}\s*$)/i;
+const SKIP_PU = /^(?:(?:skinparam|title|caption|header|footer|hide|show|scale|allowmixing|left to right direction|top to bottom direction|legend|endlegend|together|newpage|left header|right header|center header|end note|endnote)\b|!|}\s*$)/i;
 
 function skipBlock(L: string[], i: number, s: string): number {   // returns the index of the last line of a multi-line block starting at s, or i
     if (/^skinparam\b.*\{\s*$/i.test(s)) {
@@ -342,7 +342,7 @@ const PU_REV: Record<string, { t: ConnType, rev?: boolean }> = {
     '--o': {t: 'aggregation', rev: true},
     '--*': {t: 'composition', rev: true}
 };
-const normPuArrow = (s: string) => s.replace(/"[^"]*"/g, '').replace(/\[[^\]]*\]/g, '').replace(/(left|right|down|up|le|ri|do|l|r|u|d)/g, '').replace(/\s+/g, '').replace(/-+/g, '--').replace(/\.+/g, '..');
+const normPuArrow = (s: string) => s.replace(/"[^"]*"/g, '').replace(/\[[^\]]*]/g, '').replace(/(left|right|down|up|le|ri|do|l|r|u|d)/g, '').replace(/\s+/g, '').replace(/-+/g, '--').replace(/\.+/g, '..');
 
 function parsePlantUml(src: string): ImportedGraph {
     if (/^\s*\(\*\)/m.test(src)) throw new Error('the old PlantUML activity syntax with (*) is not supported. Use the newer syntax with start and stop.');
@@ -373,7 +373,7 @@ function parsePlantUml(src: string): ImportedGraph {
             graphNode(g, map, m[1], {label: m[1], kind: 'user'});
             return [m[1], pos + m[0].length];
         }
-        if ((m = rest.match(/^\[([^\]]+)\]/))) {
+        if ((m = rest.match(/^\[([^\]]+)]/))) {
             graphNode(g, map, m[1], {label: m[1], kind: 'api'});
             return [m[1], pos + m[0].length];
         }
@@ -388,7 +388,7 @@ function parsePlantUml(src: string): ImportedGraph {
         return null;
     };
     // optional "multiplicity" labels sit either side of the arrow; one is only taken on the right when another endpoint follows it
-    const ARROW = /^\s*(?:"[^"]*"\s*)?(<\|?|\*|o|\+|#|\^|\})?([-.=~]+)(?:\[[^\]]*\])?(?:left|right|up|down|le|ri|do|l|r|u|d)?([-.=~]*)(\|?>|\*|o|\+|#|\^|\{)?\s*(?:"[^"]*"\s*(?=[^\s:]))?/;
+    const ARROW = /^\s*(?:"[^"]*"\s*)?(<\|?|\*|o|\+|#|\^|})?([-.=~]+)(?:\[[^\]]*])?(?:left|right|up|down|le|ri|do|l|r|u|d)?([-.=~]*)(\|?>|\*|o|\+|#|\^|\{)?\s*(?:"[^"]*"\s*(?=[^\s:]))?/;
     for (let i = 0; i < L.length; i++) {
         let s = L[i];
         if (!s) continue;
@@ -417,7 +417,7 @@ function parsePlantUml(src: string): ImportedGraph {
                 else if ((mm = rest.match(/^([\p{L}\p{N}_.]+)\s+as\s+"([^"]*)"/u))) declareShape(mm[1], mm[2], kind);
                 else if ((mm = rest.match(/^([\p{L}\p{N}_.]+)\s*\[\s*$/u))) {
                     const buf: string[] = [];
-                    while (++i < L.length && !/^\]/.test(L[i])) buf.push(L[i]);
+                    while (++i < L.length && !/^]/.test(L[i])) buf.push(L[i]);
                     declareShape(mm[1], buf.join('\n').trim(), kind);
                 } else if ((mm = rest.match(/^([\p{L}\p{N}_.]+)\s*\[(.*)\]$/u))) declareShape(mm[1], mm[2].trim(), kind);
                 else if ((mm = rest.match(/^"([^"]*)"$/))) declareShape(mm[1], mm[1], kind);
@@ -753,6 +753,21 @@ const DOT_KIND: Record<string, ShapeKind> = {
     record: 'process',
     mrecord: 'process'
 };
+/* drops <port> names from a record field; \< and \> are literal brackets and stay (dotLabel unescapes them) */
+const stripPorts = (s: string): string => {
+    let out = '', port = -1;
+    for (let i = 0; i < s.length; i++) {
+        const c = s[i];
+        if (c === '\\' && i + 1 < s.length) {
+            if (port < 0) out += c + s[i + 1];
+            i++;
+        } else if (port >= 0) {
+            if (c === '>') port = -1;
+        } else if (c === '<') port = i;
+        else out += c;
+    }
+    return port >= 0 ? out + s.slice(port) : out;   // an unclosed < is text, not a port
+};
 const dotLabel = (s: string, id: string) => s.replace(/\\N/g, id).replace(/\\[nlr]/g, '\n').replace(/\\(.)/g, '$1').replace(/\n+$/, '');
 const DOT_REV: Record<string, Marker> = {
     normal: 'arrow',
@@ -908,7 +923,7 @@ function parseDot(src: string): ImportedGraph {
         const tagged = (a.comment || '').match(/^flow-editor:(\w+)$/);
         n.kind = (tagged && savedKind(tagged[1])) || (shape ? DOT_KIND[shape] || 'process' : 'process');
         if (!tagged && n.kind === 'process' && /rounded/.test(a.style || '')) n.kind = 'terminator';
-        const fieldsOf = () => raw.replace(/^\s*\{|\}\s*$/g, '').split(/(?<!\\)\|/).map(f => f.replace(/<[^>]*>/g, '').trim());
+        const fieldsOf = () => raw.replace(/^\s*\{|}\s*$/g, '').split(/(?<!\\)\|/).map(f => stripPorts(f).trim());
         if (n.kind === 'umlclass' && raw.includes('|'))   // one of ours: its compartments go back into one label, split on |
             n.label = fieldsOf().map(f => dotLabel(f, n.id).replace(/\n+$/, '')).join(' | ');
         else if ((shape === 'record' || shape === 'mrecord') && raw.includes('|')) {
@@ -1158,7 +1173,8 @@ export function detectFormat(t: string): string | null {
     const s = t.trim();
     if (/^<(\?xml[^>]*>\s*)?<?(mxfile|mxGraphModel)\b/.test(s) || (/^</.test(s) && /<mx(file|GraphModel)\b/.test(s))) return 'drawio';
     if (/@startuml/i.test(s)) return 'plantuml';
-    if (/^(?:\/\/[^\n]*\n|\/\*[\s\S]*?\*\/|#[^\n]*\n|\s)*(?:strict\s+)?(?:di)?graph\b[^{\n]*\{/i.test(s)) return 'dot';
+    // a /* */ comment ends at its first */, so the comments before the header can only be split one way
+    if (/^(?:\/\/[^\n]*\n|\/\*(?:[^*]|\*(?!\/))*\*\/|#[^\n]*\n|\s)*(?:strict\s+)?(?:di)?graph\b[^{\n]*\{/i.test(s)) return 'dot';
     if (/^(?:---[\s\S]*?---\s*)?(?:%%[^\n]*\n\s*)*(?:flowchart|graph)\b/i.test(s)) return 'mermaid';
     return null;
 }
