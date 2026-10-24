@@ -147,8 +147,14 @@ Where the code is against principle 3 (a component owns its piece of the screen)
   switching (`switchPage`), renaming in place (double-click, `renamePage`) and deleting (`requestDeletePage`),
   shared with the Page panel's own Name field and Delete button.
 - [x] **Props.** Split into `PageProps`, `ShapeProps`, `ConnectionProps` and `MultiProps`, dispatched by `Props.tsx`.
-- [ ] **DiagramTextEditor.** Pin, Hide and the language choice go first. The editor itself (gutter, highlighting,
-  suggestions) can stay an engine piece inside, like the canvas.
+- [x] **DiagramTextEditor.** `#textPane`'s `hidden`/`floating`, the language `<select>` (controlled, `value={TP.mode}`),
+  and Pin/Hide/Apply/Revert all read/write `TP` directly and own their own `onClick`/`onChange`
+  (`setPane`/`setLanguage`/`applyForeign`/`revertEditor`, all exported from `text-pane.ts`); `TextEditorAction.tsx`
+  is gone (its four buttons stopped being a uniform list once each needed its own dynamic hidden/disabled/label).
+  `refreshEditor()` now `notify()`s once at the end instead of writing Apply/Revert's DOM state. The editor itself
+  (gutter, highlighting, suggestions, the status line) stays an engine piece inside, as planned - `codeText`,
+  `codeHl`, `codeGutter` and `tpStatus` are still plain DOM nodes `text-pane.ts` writes into directly, same as the
+  canvas.
 - [x] **Tour.** Store-driven (`getStep`/`getTourStep` via `useSyncExternalStore`), owns `tourEnd`/`tourNext`
   directly. `tutorial.ts`'s `init()` only wires step-progress watching (a `MutationObserver` plus
   pointerup/keyup/focusout); `highlight()`/`place()` touch elements outside Tour's own tree to point the card at
@@ -160,7 +166,10 @@ Where the code is against principle 3 (a component owns its piece of the screen)
   listeners it serves, the same pattern as the tool store in `palette.ts`) instead of the DOM; `Notify.tsx` reads
   it via `useSyncExternalStore`. The div stays mounted while hidden (message and all) so the CSS fade on `.show`
   still has something under it, exactly as when `toast()` wrote the DOM directly.
-- [ ] **ShowDiagram.** An empty `#textTab` button; shown/hidden and wired from `text-pane.ts`.
+- [x] **ShowDiagram.** Owns `onClick` (`setPane(true, TP.pinned)`) and `hidden={TP.open}` directly. `setPane()`
+  now `notify()`s on every change (from here, Ctrl+E and the pane's own Pin/Close), which is also how this stays
+  in sync regardless of which of those opened or closed it. The rest of the pane (`#textPane` itself, Pin, Close,
+  resize, language select) is still wired imperatively in `text-pane.ts` - that's `DiagramTextEditor`'s half.
 - [ ] When `main.ts`'s `init()` list is empty, delete it and load the engine directly from `App.tsx`.
 
 The recipe for each one is the one used for Palette: move each `$('id').onclick` onto its JSX element, add a small

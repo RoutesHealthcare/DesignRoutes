@@ -1,5 +1,6 @@
 /* ---------- the text pane: a tab that can be hidden, opened over the canvas, or pinned beside it ---------- */
 import {$, S, kid, kids, svg, toast} from './core';
+import {notify} from './store';
 import {is1D, shapeCtx} from './visio-package';
 import {applyView, pageCtx, render} from './render';
 import {select} from './selection';
@@ -60,17 +61,13 @@ function storePane(): void {
 export function setPane(open: boolean, pinned: boolean): void {
     TP.open = open;
     TP.pinned = pinned;
-    const $textPane = $('textPane');
-    $textPane.hidden = !open;
-    $('textTab').hidden = open;
+    // body's own class, not a component's piece of the screen (same reasoning as the stage's classes in
+    // palette.ts's setTool) - #textPane's own hidden/floating are DiagramTextEditor.tsx's, read off TP directly
     document.body.classList.toggle('tp-pinned', open && pinned);
-    $textPane.classList.toggle('floating', open && !pinned);
-    const $tpPin = $('tpPin');
-    $tpPin.setAttribute('aria-pressed', String(pinned));
-    $tpPin.textContent = pinned ? 'Unpin' : 'Pin';
     storePane();
     if (open) refreshEditor(true);
     applyView();
+    notify();   // so ShowDiagram.tsx's hidden={TP.open} (and anything else watching TP) re-syncs
 }
 
 let FLOW_KW: RegExp, KIND_RE: RegExp;
@@ -203,10 +200,7 @@ export function refreshEditor(force = false): void {
             setStatus('Could not show this page: ' + (e instanceof Error ? e.message : String(e)), true);
         }
     }
-    const $tpApply = $<HTMLButtonElement>('tpApply');
-    const $tpRevert = $<HTMLButtonElement>('tpRevert');
-    $tpApply.hidden = $tpRevert.hidden = TP.mode === 'flow';
-    $tpApply.disabled = $tpRevert.disabled = !TP.dirty;
+    notify();   // DiagramTextEditor.tsx reads TP.mode/TP.dirty (the language select, Apply/Revert) straight off TP
 }
 
 function setStatus(msg: string, isErr = false): void {
@@ -242,7 +236,7 @@ export function applyFromEditor(now = false): void {
 }
 
 /* Applies the pane's text in another format to the current page. Shapes whose names match keep their places. */
-async function applyForeign(): Promise<void> {
+export async function applyForeign(): Promise<void> {
     const fmt = TP.mode, text = codeText.value;
     try {
         const g = applyTags(await IMPORTERS[fmt](text)), nodes: StatementNode[] = g.nodes;
@@ -250,7 +244,10 @@ async function applyForeign(): Promise<void> {
         for (const [fid, eid] of Object.entries(exportIds(cur))) rev[eid] = fid;
         for (const n of cur.nodes) if (!byLabel[n.label]) byLabel[n.label] = n.id;
         const ap = S.ast?.pages[S.pi];
-        if (!ap) throw new Error('there is no page to apply it to.');
+        if (!ap) {
+            setStatus('Could not apply: there is no page to apply it to.', true);
+            return;
+        }
         for (const n of nodes) {
             const fid = rev[n.id] || (fmt === 'activity' ? byLabel[n.label] : null);
             if (!fid) continue;
@@ -288,6 +285,25 @@ async function applyForeign(): Promise<void> {
         console.error('Apply failed', e);
         setStatus('Could not apply: ' + (e instanceof Error ? e.message : String(e)), true);
     }
+}
+
+/* What the Revert button does: discard the other-format text's edits and show the page as that format again */
+export function revertEditor(): void {
+    TP.dirty = false;
+    refreshEditor(true);
+}
+
+/* What the language select does. Unlike a normal controlled field, a cancelled change has nothing of its own to
+   undo - the <select>'s value is TP.mode itself, so refreshEditor()'s notify() alone snaps it back on screen. */
+export function setLanguage(mode: string): void {
+    if (TP.dirty && !confirm('Your unapplied edits will be lost. Continue?')) {
+        notify();
+        return;
+    }
+    if (TP.mode === 'flow') applyFromEditor(true);
+    TP.mode = mode;
+    TP.dirty = false;
+    refreshEditor(true);
 }
 
 const caretLine = () => codeText.value.slice(0, codeText.selectionStart).split('\n').length - 1;
@@ -399,25 +415,6 @@ export function init(): void {
     codeText.addEventListener('blur', () => {
         if (TP.mode === 'flow') applyFromEditor(true);
     });
-    const $tpLang = $<HTMLSelectElement>('tpLang');
-    $tpLang.addEventListener('change', () => {
-        if (TP.dirty && !confirm('Your unapplied edits will be lost. Continue?')) {
-            $tpLang.value = TP.mode;
-            return;
-        }
-        if (TP.mode === 'flow') applyFromEditor(true);
-        TP.mode = $tpLang.value;
-        TP.dirty = false;
-        refreshEditor(true);
-    });
-    $('tpApply').onclick = applyForeign;
-    $('tpRevert').onclick = () => {
-        TP.dirty = false;
-        refreshEditor(true);
-    };
-    $('tpPin').onclick = () => setPane(true, !TP.pinned);
-    $('tpClose').onclick = () => setPane(false, TP.pinned);
-    $('textTab').onclick = () => setPane(true, TP.pinned);
     svg.addEventListener('pointerdown', () => {
         if (TP.open && !TP.pinned) setPane(false, false);
     }, true);

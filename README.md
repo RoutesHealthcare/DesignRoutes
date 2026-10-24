@@ -417,9 +417,9 @@ look. The drawing itself is never changed: leaving shows it exactly as it was, a
 ## Diagrams
 
 `examples/` holds generic `.flow` diagrams, unrelated to any particular project, showing what the format and the
-shapes look like. `build-pipeline.flow` is a small CI-build process with a decision and a loop.
-`order-flow-animated.flow` is an order going through a flowchart in five steps: open it and press **Present**
-(see [Presenting step by step](#presenting-step-by-step)).
+shapes look like. `build-pipeline.flow` is a small CI-build process with a decision and a loop; press **Present**
+to step through it stage by stage (see [Presenting step by step](#presenting-step-by-step)).
+`order-flow-animated.flow` is an order going through a flowchart in five steps, the same way.
 
 ![The build-pipeline example](examples/build-pipeline.png)
 
