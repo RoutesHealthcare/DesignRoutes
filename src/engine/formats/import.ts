@@ -753,10 +753,20 @@ const DOT_KIND: Record<string, ShapeKind> = {
     record: 'process',
     mrecord: 'process'
 };
-/* drops <port> names and markup from a record field, repeating until none is left so nested ones go too */
-const stripTags = (s: string): string => {
-    for (let prev = ''; prev !== s;) [prev, s] = [s, s.replace(/<[^>]*>/g, '')];
-    return s;
+/* drops <port> names from a record field; \< and \> are literal brackets and stay (dotLabel unescapes them) */
+const stripPorts = (s: string): string => {
+    let out = '', port = -1;
+    for (let i = 0; i < s.length; i++) {
+        const c = s[i];
+        if (c === '\\' && i + 1 < s.length) {
+            if (port < 0) out += c + s[i + 1];
+            i++;
+        } else if (port >= 0) {
+            if (c === '>') port = -1;
+        } else if (c === '<') port = i;
+        else out += c;
+    }
+    return port >= 0 ? out + s.slice(port) : out;   // an unclosed < is text, not a port
 };
 const dotLabel = (s: string, id: string) => s.replace(/\\N/g, id).replace(/\\[nlr]/g, '\n').replace(/\\(.)/g, '$1').replace(/\n+$/, '');
 const DOT_REV: Record<string, Marker> = {
@@ -913,7 +923,7 @@ function parseDot(src: string): ImportedGraph {
         const tagged = (a.comment || '').match(/^flow-editor:(\w+)$/);
         n.kind = (tagged && savedKind(tagged[1])) || (shape ? DOT_KIND[shape] || 'process' : 'process');
         if (!tagged && n.kind === 'process' && /rounded/.test(a.style || '')) n.kind = 'terminator';
-        const fieldsOf = () => raw.replace(/^\s*\{|}\s*$/g, '').split(/(?<!\\)\|/).map(f => stripTags(f).trim());
+        const fieldsOf = () => raw.replace(/^\s*\{|}\s*$/g, '').split(/(?<!\\)\|/).map(f => stripPorts(f).trim());
         if (n.kind === 'umlclass' && raw.includes('|'))   // one of ours: its compartments go back into one label, split on |
             n.label = fieldsOf().map(f => dotLabel(f, n.id).replace(/\n+$/, '')).join(' | ');
         else if ((shape === 'record' || shape === 'mrecord') && raw.includes('|')) {

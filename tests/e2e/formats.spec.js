@@ -27,6 +27,16 @@ test('a DOT import still recognises the file behind leading comments', async({ap
   await expect(app.shape('Alpha')).toHaveCount(1);
 });
 
+test('a DOT record keeps escaped angle brackets and drops port names', async({app,page})=>{
+  await page.click('#btnImport');
+  await page.fill('#importText','digraph G {\n  r [shape=record, label="{Repo|<f1> items: List\\<Item\\>\\l|add()\\l}"]\n}');
+  await page.click('#importGo');
+  await expect(app.shape('Repo')).toHaveCount(1);
+  const text = await app.flowText();
+  expect(text).toContain('items: List<Item>');
+  expect(text).not.toContain('f1');
+});
+
 test('pasting run-on comment markers fails fast instead of freezing the page', async({app,page})=>{
   await page.click('#btnImport');
   await page.fill('#importText','/**/'.repeat(40)+' not a diagram');
